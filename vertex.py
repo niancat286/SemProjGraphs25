@@ -24,5 +24,17 @@ class Vertex:
     def update_position(self):
         self.screen_x, self.screen_y = self.project_point(self._x, self._y, self._z)
 
+    def move_x(self, x):
+        self._x = x
+        self.update_position()
+    
+    def move_y(self, y):
+        self._y = y
+        self.update_position()
+
+    def move_z(self, z):
+        self._z = z
+        self.update_position()
+
     def __str__(self):
         print(f'Vertex {self._number}, cords: {self._x, self._y, self._z}')
