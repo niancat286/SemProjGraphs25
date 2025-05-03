@@ -15,7 +15,7 @@ class Vertex:
 
         self.canvas_id = None  # id овала вершини на Canvas
 
-    def project_point(x0, y0, z0): #ізометричне спотворення
+    def project_point(self, x0, y0, z0): #ізометричне спотворення
         scale = 40
         screen_x = scale * (x0 - y0)
         screen_y = scale * (x0 + y0) / 2 - scale * z0
