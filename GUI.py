@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from graph import Graph
+from canvas import Canvas
 
 class VertexMover():
     def __init__(self, root, graph, N=15):
@@ -107,15 +108,35 @@ class GUI():
     def __init__(self):
         self._root = tk.Tk()
         self._root.geometry("1280x720")
-        self._canvas = tk.Canvas(self._root,  bg="#FFFFFF")
-        self._canvas.place(relx=0.01, rely=0.01,relwidth=0.8, relheight=0.9)
-        self._import_graph_button = ttk.Button(self._root, text='Import graph', command=self._import_graph)
-        self._import_graph_button.place(relx=0.99, rely=0.01, relwidth=0.15, relheight=0.085, anchor='ne')
         self._graph = Graph()
 
-        self.vertex_mover = VertexMover(self._root, self._graph)
-
+        self._create_widgets()
         self._root.mainloop()
+
+
+    def _create_widgets(self):
+        self._create_canvas()
+        self._create_import_button()
+        self._create_vertex_mover()
+        self._create_zoom_slider()
+        self._create_rotation_interface()
+
+    def _create_canvas(self):
+        self._canvas = Canvas(self._root)
+
+    def _create_import_button(self):
+        self._import_graph_button = ttk.Button(self._root, text='Import graph', command=self._import_graph)
+        self._import_graph_button.place(relx=0.99, rely=0.01, relwidth=0.15, relheight=0.085, anchor='ne')
+    
+    def _create_vertex_mover(self):
+        self._vertex_mover = VertexMover(self._root, self._graph)
+
+    def _create_zoom_slider(self):
+        pass
+
+    def _create_rotation_interface(self):
+        pass
+
     def _import_graph(self):
         filename = tk.filedialog.askopenfilename(defaultextension = ".txt",
                                                  filetypes = (("Text Files", "*.txt"),
@@ -128,7 +149,7 @@ class GUI():
 
 
     def _canvas_update(self):
-        self._graph.draw()
+        self._canvas.update()
 
 
 if __name__ == "__main__":
