@@ -9,10 +9,13 @@ PI = 3.1415926535
 class VertexMover():
     def __init__(self, root, graph, N=15):
         self._root = tk.Toplevel(root)
+        
         self._root.title("Move Vertex")
         self._root.geometry("400x300")
         self._root.geometry("-100-100")
         self._root.protocol("WM_DELETE_WINDOW", self._hide)
+        self._root.withdraw()
+
         self._graph = graph
         self._N = N
         self._vertex = None
@@ -133,8 +136,117 @@ class VertexMover():
         self._root.deiconify()
        # self._root.lift()
 
+    def destroy(self):
+        self._root.destroy()
 
 
+class RotationInterface(ttk.Frame):
+    def __init__(self, root, canvas, graph):
+        super().__init__(root)
+        self.pack(pady=5, fill='x', padx=5)
+        self.__canvas = canvas
+        self.__graph = graph
+        self.__create_widgets()
+
+    def __create_widgets(self):
+        self.__label = ttk.Label(self, text="Rotation")
+        self.__label.grid(row=0,columnspan=2)
+        self.__create_x_rot_slider()
+        self.__create_y_rot_slider()
+        self.__create_z_rot_slider()
+        self.columnconfigure(1, weight=1)
+        self.__create_reset_rot_button()
+        self.__create_fix_rot_button()
+
+
+    def __create_x_rot_slider(self):
+        ttk.Label(self, text="X:").grid(row=1, column=0, sticky='w')
+        self.x_rotation_slider = ttk.Scale(self, from_=-PI, to=PI, command=self.__canvas.redraw())
+        self.x_rotation_slider.grid(row=1, column=1, sticky='ew')
+        self.x_rotation_slider.set(0)
+
+    def __create_y_rot_slider(self):
+        ttk.Label(self, text="Y:").grid(row=2, column=0, sticky='w')
+        self.y_rotation_slider = ttk.Scale(self, from_=-PI, to=PI, command=self.__canvas.redraw())
+        self.y_rotation_slider.grid(row=2, column=1, sticky='ew')
+        self.y_rotation_slider.set(0)
+
+    def __create_z_rot_slider(self):
+        ttk.Label(self, text="Z:").grid(row=3, column=0, sticky='w')
+        self.z_rotation_slider = ttk.Scale(self, from_=-PI, to=PI, command=self.__canvas.redraw())
+        self.z_rotation_slider.grid(row=3, column=1, sticky='ew')
+
+        self.z_rotation_slider.set(0)
+
+    def __create_reset_rot_button(self):
+        self.__reset_button = ttk.Button(self, text="Reset", command=self.__reset_rotation)
+        self.__reset_button.grid(row=4,column=1)
+
+
+    def __create_fix_rot_button(self):
+        self.__fix_button = ttk.Button(self, text="Fix", command=self.__fix_rotation)
+        self.__fix_button.grid(row=4,column=0)
+
+    def __reset_rotation(self):
+        pass
+
+    def __fix_rotation(self):
+        pass
+
+
+
+
+
+
+class Controls(ttk.Frame):
+    def __init__(self, root, canvas, graph, relx=0.81, rely=0.01, relwidth=0.19, relheight=0.98, anchor="nw"):
+        super().__init__(root)
+        self.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight, anchor=anchor)
+        self._canvas = canvas
+        self.__widgets = []
+        self.__graph = graph
+        self.__vertex_mover = VertexMover(self, self.__graph)
+        self.__create_widgets()
+
+    def __create_widgets(self):
+        self._create_vertex_mover_button()
+        self._create_zoom_slider()
+        self._create_rotation_interface()
+
+    def _create_vertex_mover_button(self):
+        self._vertex_mover_button = ttk.Button(self, text='Move vertex', command=self.__vertex_mover.show, state='disabled')
+        self._vertex_mover_button.pack(side='top', pady=2)
+        #self._vertex_mover_button.place(relx=0.01, rely=0.09, relwidth=0.15, relheight=0.06, anchor='ne')
+
+    def _create_vertex_mover(self):
+        if self.__vertex_mover is None:
+            self.__vertex_mover = VertexMover(self, self.__graph)
+        else:
+            self.__vertex_mover.show()
+
+       
+    def _create_zoom_slider(self):
+        self._zoom_label = ttk.Label(self, text="Zoom")
+        self._zoom_label.pack(side='top',pady=(5,3))
+        self._zoom_slider = ttk.Scale(self, from_=400.0, to=0.1, orient="horizontal", command=self._update_zoom)
+        self._zoom_slider.set(2)#canvas.zoom
+        self._zoom_slider.pack(pady=3, padx=5, fill='x')
+
+    def _update_zoom(self, *args):
+        self._canvas.zoom = self._zoom_slider.get()
+        self._canvas.redraw()
+
+    def _create_rotation_interface(self):
+        self.__rotation_interface = RotationInterface(self, self._canvas, self.__graph)
+       
+    def activate(self):
+        for widget in self.__widgets:
+            widget.config(state="normal")
+            
+
+    def disable(self):
+        for widget in self.__widgets:
+            widget.config(state="disabled")
 
 
 
@@ -144,95 +256,25 @@ class GUI():
         self._root.geometry("1280x720")
         sv_ttk.set_theme("dark")
 
-        self._create_widgets()
-                
         self._graph = Graph()
-        self._vertex_mover = None 
 
+        self._create_widgets()
         self._root.mainloop()
 
     def _create_widgets(self):
         self._create_canvas()
         self._create_import_button()
-        self._create_vertex_mover_button()
-        self._create_zoom_slider()
-        self._create_rotation_interface()
-
-    def _create_vertex_mover_button(self):
-        self._vertex_mover_button = ttk.Button(self._root, text='Move vertex', command=self._create_vertex_mover, state='disabled')
-        self._vertex_mover_button.place(relx=0.98, rely=0.09, relwidth=0.15, relheight=0.06, anchor='ne')
-
-    def _create_vertex_mover(self):
-        if self._vertex_mover is None:
-            self._vertex_mover = VertexMover(self._root, self._graph)
-        else:
-            self._vertex_mover.show()
-
+        self._create_controls()
+        
+    def _create_controls(self):
+        self.__controls = Controls(self._root, rely=0.06,relheight=0.92, canvas=self._canvas, graph=self._graph)
 
     def _create_canvas(self):
         self._canvas = Canvas(self._root)
        
     def _create_import_button(self):
         self._import_graph_button = ttk.Button(self._root, text='Import graph', command=self._import_graph)
-        self._import_graph_button.place(relx=0.98, rely=0.02, relwidth=0.15, relheight=0.06, anchor='ne')
-       
-    def _create_zoom_slider(self):
-        self._zoom_label = ttk.Label(self._root, text="Zoom")
-        self._zoom_label.place(relx=0.98, rely=0.16, relwidth=0.1, relheight=0.035, anchor="ne")
-        self._zoom_slider = ttk.Scale(self._root, from_=400.0, to=0.1, orient="horizontal", command=self._update_zoom)
-        self._zoom_slider.set(self._canvas.zoom)
-        self._zoom_slider.place(relx=0.98, rely=0.197, relwidth=0.15, relheight=0.04, anchor="ne")
-
-    def _update_zoom(self, *args):
-        self._canvas.zoom = self._zoom_slider.get()
-        self._canvas.redraw()
-
-    def _create_rotation_interface(self):
-        self.__rot_label = ttk.Label(self._root, text="Rotation",justify="center")
-        self.__rot_label.place(relx=0.915, rely=0.25, relwidth=0.1, relheight=0.035,anchor="center")
-
-        self.__create_x_rot_slider()
-        self.__create_y_rot_slider()
-        self.__create_z_rot_slider()
-        self.__create_reset_rot_button()
-        self.__create_fix_rot_button()
-
-
-    def __create_x_rot_slider(self):
-        self.__x_rot_label = ttk.Label(self._root, text="X:")
-        self.__x_rot_label.place(relx=0.811, rely=0.285, relwidth=0.015, relheight=0.04, anchor="nw")
-
-        self.x_rotation_slider = ttk.Scale(self._root, from_=-PI, to=PI, orient="horizontal", command=self._canvas.redraw())
-        self.x_rotation_slider.set(0)
-        self.x_rotation_slider.place(relx=0.98, rely=0.285,  relwidth=0.15, relheight=0.04, anchor="ne")
-
-    def __create_y_rot_slider(self):
-        self.__y_rot_label = ttk.Label(self._root, text="Y:")
-        self.__y_rot_label.place(relx=0.811, rely=0.325, relwidth=0.015, relheight=0.04, anchor="nw")
-
-        self.y_rotation_slider = ttk.Scale(self._root, from_=-PI, to=PI, orient="horizontal", command=self._canvas.redraw())
-        self.y_rotation_slider.set(0)
-        self.y_rotation_slider.place(relx=0.98, rely=0.325, relwidth=0.15, relheight=0.04, anchor="ne")
-
-    def __create_z_rot_slider(self):
-        self.__z_rot_label = ttk.Label(self._root, text="Z:")
-        self.__z_rot_label.place(relx=0.811, rely=0.365, relwidth=0.015, relheight=0.04, anchor="nw")
-
-        self.z_rotation_slider = ttk.Scale(self._root, from_=-PI, to=PI, orient="horizontal", command=self._canvas.redraw())
-        self.z_rotation_slider.set(0)
-        self.z_rotation_slider.place(relx=0.98, rely=0.365, relwidth=0.15, relheight=0.04, anchor="ne")
-
-    def __create_reset_rot_button(self):
-        ttk.Button(self._root, text="Reset", command=self.__reset_rotation).place(relx=0.98, rely=0.405, relwidth=0.075, relheight=0.05, anchor="ne")
-
-    def __create_fix_rot_button(self):
-        ttk.Button(self._root, text="Fix", command=self.__fix_rotation).place(relx=0.82, rely=0.405, relwidth=0.075, relheight=0.05,  anchor="nw")
-
-    def __reset_rotation(self):
-        pass
-
-    def __fix_rotation(self):
-        pass
+        self._import_graph_button.place(relx=0.905, rely=0.0015, relwidth=0.15, relheight=0.05, anchor='n')
 
     def _import_graph(self):
         filename = tk.filedialog.askopenfilename(defaultextension = ".txt",
@@ -243,8 +285,7 @@ class GUI():
      #   if(self._graph.read(filename)):
          #   self._canvas_redraw()
         #    self.vertex_mover = VertexMover(self._root, self._graph)
-        self._vertex_mover_button.config(state='normal')
-
+        self.__controls.activate()
 
     def _canvas_update(self):
         self._canvas.redraw()
