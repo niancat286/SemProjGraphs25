@@ -4,6 +4,8 @@ from graph import Graph
 from canvas import Canvas
 import sv_ttk
 
+PI = 3.1415926535
+
 class VertexMover():
     def __init__(self, root, graph, N=15):
         self._root = tk.Toplevel(root)
@@ -175,7 +177,7 @@ class GUI():
         self._import_graph_button.place(relx=0.98, rely=0.02, relwidth=0.15, relheight=0.06, anchor='ne')
        
     def _create_zoom_slider(self):
-        self._zoom_label = ttk.Label(self._root, text="Zoom:")
+        self._zoom_label = ttk.Label(self._root, text="Zoom")
         self._zoom_label.place(relx=0.98, rely=0.16, relwidth=0.1, relheight=0.035, anchor="ne")
         self._zoom_slider = ttk.Scale(self._root, from_=400.0, to=0.1, orient="horizontal", command=self._update_zoom)
         self._zoom_slider.set(self._canvas.zoom)
@@ -186,6 +188,9 @@ class GUI():
         self._canvas.redraw()
 
     def _create_rotation_interface(self):
+        self.__rot_label = ttk.Label(self._root, text="Rotation",justify="center")
+        self.__rot_label.place(relx=0.915, rely=0.25, relwidth=0.1, relheight=0.035,anchor="center")
+
         self.__create_x_rot_slider()
         self.__create_y_rot_slider()
         self.__create_z_rot_slider()
@@ -194,33 +199,40 @@ class GUI():
 
 
     def __create_x_rot_slider(self):
-        self._check_x_continuos = tk.BooleanVar()
-        ttk.Checkbutton(self, text="", variable=self._check_x_continuos, command=self.__continuous_x, onvalue=True, offvalue=False).place(relx=self.COMMON_X-0.1, rely=0.121)
-        ttk.Label(self, text="X Rotation:").place(relx=self.COMMON_X, rely=0.123, relheight=0.035, relwidth=0.075, anchor="ne")
-        self.x_rotation_slider = ttk.Scale(self, from_=-math.pi, to=math.pi, orient="horizontal", command=self.__changed)
+        self.__x_rot_label = ttk.Label(self._root, text="X:")
+        self.__x_rot_label.place(relx=0.811, rely=0.285, relwidth=0.015, relheight=0.04, anchor="nw")
+
+        self.x_rotation_slider = ttk.Scale(self._root, from_=-PI, to=PI, orient="horizontal", command=self._canvas.redraw())
         self.x_rotation_slider.set(0)
-        self.x_rotation_slider.place(relx=self.COMMON_X, rely=0.163, relheight=0.04, relwidth=0.1, anchor="ne")
+        self.x_rotation_slider.place(relx=0.98, rely=0.285,  relwidth=0.15, relheight=0.04, anchor="ne")
 
     def __create_y_rot_slider(self):
-        self._check_y_continuos = tk.BooleanVar()
-        ttk.Checkbutton(self, text="", variable=self._check_y_continuos, command=self.__continuous_y, onvalue=True, offvalue=False).place(relx=self.COMMON_X-0.1, rely=0.202)
-        ttk.Label(self, text="Y Rotation:").place(relx=self.COMMON_X, rely=0.204, relheight=0.035, relwidth=0.075, anchor="ne")
-        self.y_rotation_slider = ttk.Scale(self, from_=-math.pi, to=math.pi, orient="horizontal", command=self.__changed)
+        self.__y_rot_label = ttk.Label(self._root, text="Y:")
+        self.__y_rot_label.place(relx=0.811, rely=0.325, relwidth=0.015, relheight=0.04, anchor="nw")
+
+        self.y_rotation_slider = ttk.Scale(self._root, from_=-PI, to=PI, orient="horizontal", command=self._canvas.redraw())
         self.y_rotation_slider.set(0)
-        self.y_rotation_slider.place(relx=self.COMMON_X, rely=0.244, relheight=0.04, relwidth=0.1, anchor="ne")
+        self.y_rotation_slider.place(relx=0.98, rely=0.325, relwidth=0.15, relheight=0.04, anchor="ne")
 
     def __create_z_rot_slider(self):
-        self._check_z_continuos = tk.BooleanVar()
-        ttk.Checkbutton(self, text="", variable=self._check_z_continuos, command=self.__continuous_z, onvalue=True, offvalue=False).place(relx=self.COMMON_X-0.1, rely=0.283)
-        ttk.Label(self, text="Z Rotation:").place(relx=self.COMMON_X, rely=0.285, relheight=0.035, relwidth=0.075, anchor="ne")
-        self.z_rotation_slider = ttk.Scale(self, from_=-math.pi, to=math.pi, orient="horizontal", command=self.__changed)
+        self.__z_rot_label = ttk.Label(self._root, text="Z:")
+        self.__z_rot_label.place(relx=0.811, rely=0.365, relwidth=0.015, relheight=0.04, anchor="nw")
+
+        self.z_rotation_slider = ttk.Scale(self._root, from_=-PI, to=PI, orient="horizontal", command=self._canvas.redraw())
         self.z_rotation_slider.set(0)
-        self.z_rotation_slider.place(relx=self.COMMON_X, rely=0.325, relheight=0.04, relwidth=0.1, anchor="ne")
+        self.z_rotation_slider.place(relx=0.98, rely=0.365, relwidth=0.15, relheight=0.04, anchor="ne")
 
     def __create_reset_rot_button(self):
-        ttk.Button(self, text="Reset rot", command=self.__reset_rotation).place(relx=self.COMMON_X, rely=0.38, relheight=0.05, relwidth=0.095, anchor="ne")
+        ttk.Button(self._root, text="Reset", command=self.__reset_rotation).place(relx=0.98, rely=0.405, relwidth=0.075, relheight=0.05, anchor="ne")
 
+    def __create_fix_rot_button(self):
+        ttk.Button(self._root, text="Fix", command=self.__fix_rotation).place(relx=0.82, rely=0.405, relwidth=0.075, relheight=0.05,  anchor="nw")
 
+    def __reset_rotation(self):
+        pass
+
+    def __fix_rotation(self):
+        pass
 
     def _import_graph(self):
         filename = tk.filedialog.askopenfilename(defaultextension = ".txt",
@@ -240,4 +252,5 @@ class GUI():
 
 if __name__ == "__main__":
     g = GUI()
+
 
