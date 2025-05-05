@@ -150,13 +150,42 @@ class RotationInterface(ttk.Frame):
 
     def __create_widgets(self):
         self.__label = ttk.Label(self, text="Rotation")
-        self.__label.grid(row=0,columnspan=2)
-        self.__create_x_rot_slider()
-        self.__create_y_rot_slider()
-        self.__create_z_rot_slider()
-        self.columnconfigure(1, weight=1)
-        self.__create_reset_rot_button()
-        self.__create_fix_rot_button()
+        self.__label.pack()
+        self.__create_sliders()
+        self.__create_buttons()
+
+    def __create_sliders(self):
+        #ttk.Frame()
+        self.__x_rot_slider = self.__create_slider('X:')
+        self.__y_rot_slider = self.__create_slider('Y:')
+        self.__z_rot_slider = self.__create_slider('Z:')
+
+    def __create_slider(self,text):
+        slider_frame = ttk.Frame(self)
+        slider_frame.pack(pady=2,fill='x')
+        ttk.Label(slider_frame, text=text).grid(row=0, column=0, sticky='w',padx=2)
+        slider = ttk.Scale(slider_frame, from_=-PI, to=PI, command=self.__canvas.redraw())
+        slider.grid(row=0, column=1, sticky='ew', padx=2)
+        slider.set(0)
+        slider_frame.columnconfigure(1, weight=1)
+        return slider
+
+
+
+
+    def __create_buttons(self):
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(pady=1, fill='x')
+
+        self.__reset_button = ttk.Button(btn_frame, text="Reset", command=self.__reset_rotation)
+   #     self.__reset_button.grid(row=0,column=1,sticky='e')
+        self.__reset_button.pack(side='right',expand=True)
+
+        self.__fix_button = ttk.Button(btn_frame, text="Fix", command=self.__fix_rotation)
+   #     self.__fix_button.grid(row=0,column=0,sticky='w')
+        self.__fix_button.pack(side='right',expand=True)
+
+
 
 
     def __create_x_rot_slider(self):
@@ -177,15 +206,6 @@ class RotationInterface(ttk.Frame):
         self.z_rotation_slider.grid(row=3, column=1, sticky='ew')
 
         self.z_rotation_slider.set(0)
-
-    def __create_reset_rot_button(self):
-        self.__reset_button = ttk.Button(self, text="Reset", command=self.__reset_rotation)
-        self.__reset_button.grid(row=4,column=1)
-
-
-    def __create_fix_rot_button(self):
-        self.__fix_button = ttk.Button(self, text="Fix", command=self.__fix_rotation)
-        self.__fix_button.grid(row=4,column=0)
 
     def __reset_rotation(self):
         pass
