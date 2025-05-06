@@ -9,6 +9,7 @@ class Graph:
         else:
             self._matrix_adjacency = []
 
+
     def read_matrix_with_limits(self, filename, max_rows=15, max_cols=7):
         matrix = []
         with open(filename, 'r') as file:
