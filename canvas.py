@@ -9,4 +9,5 @@ class Canvas(tk.Canvas):
         self.z_rot_angle = tk.DoubleVar(value=0)
 
     def redraw(self, *args):
+        print(f"{self.zoom.get()=}\n{self.x_rot_angle.get()=}\n{self.y_rot_angle.get()=}\n{self.z_rot_angle.get()=}")
         pass
