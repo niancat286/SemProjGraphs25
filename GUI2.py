@@ -6,78 +6,79 @@ import sv_ttk
 
 PI = 3.1415926535
 
-class VertexMover():
+class VertexMover(tk.Toplevel):
     def __init__(self, root, graph, N=15):
-        self._root = tk.Toplevel(root)
+        super().__init__(root)
         
-        self._root.title("Move Vertex")
-        self._root.geometry("400x300")
-        self._root.geometry("-100-100")
-        self._root.protocol("WM_DELETE_WINDOW", self._hide)
-        self._root.withdraw()
+        self.title("Move Vertex")
+        self.geometry("400x300")
+        self.geometry("-100-100")
+        #self.__root.protocol("WM_DELETE_WINDOW", self.__hide)
+        #self.__root.withdraw()
 
-        self._graph = graph
-        self._N = N
-        self._vertex = None
+        self.__graph = graph
+        self.__N = N
+#        self.__N = graph.N
+        self.__vertex = None
         
-        self._create_widgets()
+        self.__create_widgets()
 
-    def _create_widgets(self):
-        self._create_entry()
+    def __create_widgets(self):
+        self.__create_entry()
 
-        self._create_choose_button()
-        self._create_x_spinbox()
-        self._create_y_spinbox()
-        self._create_z_spinbox()
-        self._create_close_button()
+        self.__create_choose_button()
+        self.__create_x_spinbox()
+        self.__create_y_spinbox()
+        self.__create_z_spinbox()
+        self.__create_close_button()
 
-    def _create_entry(self):
-        self._entry_value = tk.StringVar(value="Input vertex")
-        v_vcmd = (self._root.register(self.on_validate_vertex), '%P')
-        self._vertex_entry = ttk.Entry(self._root, textvariable = self._entry_value, validate="all", validatecommand=v_vcmd)
-        self._vertex_entry.place(relx=0.02, rely=0.02, relwidth=0.45, relheight=0.2, anchor='nw')
-        self._vertex_entry.bind("<FocusIn>", self.on_focus_in)
-        self._vertex_entry.bind("<FocusOut>", self.on_focus_out)
+    def __create_entry(self):
+        self.__entry_value = tk.StringVar(value="Input vertex")
+        v_vcmd = (self.register(self.on_validate_vertex), '%P')
+        self.__vertex_entry = ttk.Entry(self, textvariable = self.__entry_value, validate="all", validatecommand=v_vcmd)
+        self.__vertex_entry.place(relx=0.02, rely=0.02, relwidth=0.45, relheight=0.2, anchor='nw')
+        self.__vertex_entry.bind("<FocusIn>", self.on_focus_in)
+        self.__vertex_entry.bind("<FocusOut>", self.on_focus_out)
         
-    def _create_choose_button(self):
-        self._choose_button = ttk.Button(self._root, text="Choose")
-        self._choose_button.place(relx=0.5, rely=0.02, relwidth=0.45, relheight=0.2, anchor='nw')
-        self._choose_button['command'] = self.select_vertex
+    def __create_choose_button(self):
+        self.__choose_button = ttk.Button(self, text="Choose")
+        self.__choose_button.place(relx=0.5, rely=0.02, relwidth=0.45, relheight=0.2, anchor='nw')
+        self.__choose_button['command'] = self.select_vertex
 
        # c_vcmd = self._root.register(self.on_validate_coord, '%P')
-    def _create_x_spinbox(self):
-        self._x_label = ttk.Label(self._root, text="X:")
-        self._x_value = tk.StringVar(value = 0)
-        self._x_spinbox = ttk.Spinbox(self._root, textvariable=self._x_value, from_ = -100*self._N, to = 100*self._N, state="disabled", command=self.move_x)
+    def __create_x_spinbox(self):
+        self.__x_label = ttk.Label(self, text="X:")
+        self.__x_value = tk.StringVar(value = 0)
+        self.__x_spinbox = ttk.Spinbox(self, textvariable=self.__x_value, from_ = -100*self.__N, to = 100*self.__N, state="disabled", command=self.move_x)
     
-        self._x_label.place(relx = 0.04, rely = 0.3, relwidth = 0.3, relheight=0.1, anchor='nw')
-        self._x_spinbox.place(relx = 0.32, rely = 0.3, relwidth = 0.3, relheight = 0.1, anchor='nw')
+        self.__x_label.place(relx = 0.04, rely = 0.3, relwidth = 0.3, relheight=0.1, anchor='nw')
+        self.__x_spinbox.place(relx = 0.32, rely = 0.3, relwidth = 0.3, relheight = 0.1, anchor='nw')
 
-    def _create_y_spinbox(self):
-        self._y_label = ttk.Label(self._root, text="Y:")
-        self._y_value = tk.StringVar(value = 0)
-        self._y_spinbox = ttk.Spinbox(self._root, textvariable=self._y_value, from_ = -100*self._N, to = 100*self._N, state="disabled", command=self.move_y)
+    def __create_y_spinbox(self):
+        self.__y_label = ttk.Label(self, text="Y:")
+        self.__y_value = tk.StringVar(value = 0)
+        self.__y_spinbox = ttk.Spinbox(self, textvariable=self.__y_value, from_ = -100*self.__N, to = 100*self.__N, state="disabled", command=self.move_y)
         
-        self._y_label.place(relx = 0.04, rely = 0.41, relwidth = 0.3, relheight=0.1, anchor='nw')
-        self._y_spinbox.place(relx = 0.32, rely = 0.41, relwidth = 0.3, relheight = 0.1, anchor='nw')
+        self.__y_label.place(relx = 0.04, rely = 0.41, relwidth = 0.3, relheight=0.1, anchor='nw')
+        self.__y_spinbox.place(relx = 0.32, rely = 0.41, relwidth = 0.3, relheight = 0.1, anchor='nw')
     
-    def _create_z_spinbox(self):
-        self._z_label = ttk.Label(self._root, text="Z:")
-        self._z_value = tk.StringVar(value = 0)
-        self._z_spinbox = ttk.Spinbox(self._root, textvariable=self._z_value, from_ = -100*self._N, to = 100*self._N, state="disabled",command=self.move_z)
+    def __create_z_spinbox(self):
+        self.__z_label = ttk.Label(self, text="Z:")
+        self.__z_value = tk.StringVar(value = 0)
+        self.__z_spinbox = ttk.Spinbox(self, textvariable=self.__z_value, from_ = -100*self.__N, to = 100*self.__N, state="disabled",command=self.move_z)
         
-        self._z_label.place(relx = 0.04, rely = 0.52, relwidth = 0.03, relheight=0.1, anchor='nw')
-        self._z_spinbox.place(relx = 0.32, rely = 0.52, relwidth = 0.3, relheight = 0.1, anchor='nw')
+        self.__z_label.place(relx = 0.04, rely = 0.52, relwidth = 0.03, relheight=0.1, anchor='nw')
+        self.__z_spinbox.place(relx = 0.32, rely = 0.52, relwidth = 0.3, relheight = 0.1, anchor='nw')
     
-    def _create_close_button(self):
-        self._close_button = ttk.Button(self._root, text='Close window', command=self._hide)
-        self._close_button.place(relx=0.5, rely = 0.8, relwidth = 0.5, relheight=0.1, anchor='center')
+    def __create_close_button(self):
+        self.__close_button = ttk.Button(self, text='Close window', command=self.destroy)
+        self.__close_button.place(relx=0.5, rely = 0.8, relwidth = 0.5, relheight=0.1, anchor='center')
 
     def on_validate_vertex(self, s):
         try:
             print(s)
             digit = int(s)
-            return 0 < digit <= self._N
+            return 0 < digit <= self.__N
         except ValueError:
             return s == ""
 
@@ -89,51 +90,43 @@ class VertexMover():
             return False
 
     def on_focus_in(self, event):
-        if not self._entry_value.get().isdigit():
-            self._entry_value.set("")
+        if not self.__entry_value.get().isdigit():
+            self.__entry_value.set("")
 
     def on_focus_out(self, event):
-        if self._entry_value.get() == '':
-            self._entry_value.set("Input vertex")
+        if self.__entry_value.get() == '':
+            self.__entry_value.set("Input vertex")
 
     def select_vertex(self):
-        s = self._entry_value.get()
+        s = self.__entry_value.get()
         if s.isdigit():
             v = int(s)
-            self._vertex = self._graph.give_vertex(v)
+            self.__vertex = self.__graph.give_vertex(v)
             state = "normal"      
-            self._x_value.set(self._vertex.x)
-            self._y_value.set(self._vertex.y)
-            self._z_value.set(self._vertex.z)
+            self.__x_value.set(self.__vertex.x)
+            self.__y_value.set(self.__vertex.y)
+            self.__z_value.set(self.__vertex.z)
 
         else:
-            self._vertex = None
+            self.__vertex = None
             state = "disabled"
-        self._x_spinbox.config(state=state)
-        self._y_spinbox.config(state=state)
-        self._z_spinbox.config(state=state)
+        self.__x_spinbox.config(state=state)
+        self.__y_spinbox.config(state=state)
+        self.__z_spinbox.config(state=state)
 
     def move_x(self):
-        x = float(self._x_value.get())
-        self._vertex.move_x(x)
+        x = float(self.__x_value.get())
+        self.__vertex.move_x(x)
     
     def move_y(self):
-        y = float(self._y_value.get())
-        self._vertex.move_y(y)
+        y = float(self.__y_value.get())
+        self.__vertex.move_y(y)
 
     def move_z(self):
-        z = float(self._z_value.get())
-        self._vertex.move_z(z)
+        z = float(self.__z_value.get())
+        self.__vertex.move_z(z)
 
-    def _hide(self):
-        self._root.withdraw()
 
-    def show(self):
-        self._root.deiconify()
-       # self._root.lift()
-
-    def destroy(self):
-        self._root.destroy()
 
 
 class RotationInterface(ttk.Frame):
@@ -199,9 +192,8 @@ class Controls(ttk.Frame):
         self.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight, anchor=anchor)
 
         self.__canvas = canvas
-        self.__widgets = []
         self.__graph = graph
-        self.__vertex_mover = VertexMover(self, self.__graph)
+        self.__vertex_mover = None
         self.__create_widgets()
 
     def __create_widgets(self):
@@ -210,15 +202,19 @@ class Controls(ttk.Frame):
         self.__create_rotation_interface()
 
     def __create_vertex_mover_button(self):
-        self.__vertex_mover_button = ttk.Button(self, text='Move vertex', command=self.__vertex_mover.show, state='normal')
+        self.__vertex_mover_button = ttk.Button(self, text='Move vertex', command=self.__create_vertex_mover, state='normal')
         self.__vertex_mover_button.pack(side='top', pady=2)
         #self._vertex_mover_button.place(relx=0.01, rely=0.09, relwidth=0.15, relheight=0.06, anchor='ne')
 
     def __create_vertex_mover(self):
         if self.__vertex_mover is None:
             self.__vertex_mover = VertexMover(self, self.__graph)
+            self.__vertex_mover.bind("<Destroy>", self.on_vertex_mover_destroy)
         else:
-            self.__vertex_mover.show()
+            self.__vertex_mover.lift()
+
+    def on_vertex_mover_destroy(self, event):
+        self.__vertex_mover = None
 
        
     def __create_zoom_slider(self, variable):
@@ -238,7 +234,6 @@ class GUI(tk.Tk):
         super().__init__()
         self.geometry("1280x720")
         sv_ttk.set_theme("dark")
-        self.__canvas = None
         self.__graph = Graph()
 
         self.__create_widgets()
@@ -256,7 +251,7 @@ class GUI(tk.Tk):
        
     def __create_import_button(self):
         self.__import_graph_button = ttk.Button(self, text='Import graph', command=self.__import_graph)
-        self.__import_graph_button.place(relx=0.905, rely=0.0015, relwidth=0.15, relheight=0.05, anchor='n')
+        self.__import_graph_button.place(relx=0.905, rely=0.004, relwidth=0.1, relheight=0.05, anchor='n')
 
     def __import_graph(self):
         filename = tk.filedialog.askopenfilename(defaultextension = ".txt",
