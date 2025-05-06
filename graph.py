@@ -1,5 +1,6 @@
 class Graph:
     def __init__(self, filename = None):
+        self.N = 0
         if filename is not None:
             self.read(filename)
         pass
