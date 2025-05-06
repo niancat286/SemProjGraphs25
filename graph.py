@@ -2,6 +2,7 @@ from collections import defaultdict
 
 class Graph:
     def __init__(self, filename = None):
+        self.N = 0
         if filename is not None:
             matrix = self.read_matrix_with_limits(filename)
             self._matrix_adjacency = self.read(matrix)
