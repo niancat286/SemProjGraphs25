@@ -73,10 +73,6 @@ class VertexMover():
         self._close_button = ttk.Button(self._root, text='Close window', command=self._hide)
         self._close_button.place(relx=0.5, rely = 0.8, relwidth = 0.5, relheight=0.1, anchor='center')
 
-
-
-
-
     def on_validate_vertex(self, s):
         try:
             print(s)
@@ -156,15 +152,15 @@ class RotationInterface(ttk.Frame):
 
     def __create_sliders(self):
         #ttk.Frame()
-        self.__x_rot_slider = self.__create_slider('X:')
-        self.__y_rot_slider = self.__create_slider('Y:')
-        self.__z_rot_slider = self.__create_slider('Z:')
+        self.__x_rot_slider = self.__create_slider('X:', self.__canvas.x_rot_angle)
+        self.__y_rot_slider = self.__create_slider('Y:', self.__canvas.y_rot_angle)
+        self.__z_rot_slider = self.__create_slider('Z:', self.__canvas.z_rot_angle)
 
-    def __create_slider(self,text):
+    def __create_slider(self,text, variable):
         slider_frame = ttk.Frame(self)
         slider_frame.pack(pady=2,fill='x')
         ttk.Label(slider_frame, text=text).grid(row=0, column=0, sticky='w',padx=2)
-        slider = ttk.Scale(slider_frame, from_=-PI, to=PI, command=self.__canvas.redraw())
+        slider = ttk.Scale(slider_frame, variable=variable, from_=-PI, to=PI, command=self.__canvas.redraw())
         slider.grid(row=0, column=1, sticky='ew', padx=2)
         slider.set(0)
         slider_frame.columnconfigure(1, weight=1)
@@ -184,28 +180,7 @@ class RotationInterface(ttk.Frame):
         self.__fix_button = ttk.Button(btn_frame, text="Fix", command=self.__fix_rotation)
    #     self.__fix_button.grid(row=0,column=0,sticky='w')
         self.__fix_button.pack(side='right',expand=True)
-
-
-
-
-    def __create_x_rot_slider(self):
-        ttk.Label(self, text="X:").grid(row=1, column=0, sticky='w')
-        self.x_rotation_slider = ttk.Scale(self, from_=-PI, to=PI, command=self.__canvas.redraw())
-        self.x_rotation_slider.grid(row=1, column=1, sticky='ew')
-        self.x_rotation_slider.set(0)
-
-    def __create_y_rot_slider(self):
-        ttk.Label(self, text="Y:").grid(row=2, column=0, sticky='w')
-        self.y_rotation_slider = ttk.Scale(self, from_=-PI, to=PI, command=self.__canvas.redraw())
-        self.y_rotation_slider.grid(row=2, column=1, sticky='ew')
-        self.y_rotation_slider.set(0)
-
-    def __create_z_rot_slider(self):
-        ttk.Label(self, text="Z:").grid(row=3, column=0, sticky='w')
-        self.z_rotation_slider = ttk.Scale(self, from_=-PI, to=PI, command=self.__canvas.redraw())
-        self.z_rotation_slider.grid(row=3, column=1, sticky='ew')
-
-        self.z_rotation_slider.set(0)
+        pass
 
     def __reset_rotation(self):
         pass
@@ -222,93 +197,77 @@ class Controls(ttk.Frame):
     def __init__(self, root, canvas, graph, relx=0.81, rely=0.01, relwidth=0.19, relheight=0.98, anchor="nw"):
         super().__init__(root)
         self.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight, anchor=anchor)
-        self._canvas = canvas
+
+        self.__canvas = canvas
         self.__widgets = []
         self.__graph = graph
         self.__vertex_mover = VertexMover(self, self.__graph)
         self.__create_widgets()
 
     def __create_widgets(self):
-        self._create_vertex_mover_button()
-        self._create_zoom_slider()
-        self._create_rotation_interface()
+        self.__create_vertex_mover_button()
+        self.__create_zoom_slider(self.__canvas.zoom)
+        self.__create_rotation_interface()
 
-    def _create_vertex_mover_button(self):
-        self._vertex_mover_button = ttk.Button(self, text='Move vertex', command=self.__vertex_mover.show, state='disabled')
-        self._vertex_mover_button.pack(side='top', pady=2)
+    def __create_vertex_mover_button(self):
+        self.__vertex_mover_button = ttk.Button(self, text='Move vertex', command=self.__vertex_mover.show, state='normal')
+        self.__vertex_mover_button.pack(side='top', pady=2)
         #self._vertex_mover_button.place(relx=0.01, rely=0.09, relwidth=0.15, relheight=0.06, anchor='ne')
 
-    def _create_vertex_mover(self):
+    def __create_vertex_mover(self):
         if self.__vertex_mover is None:
             self.__vertex_mover = VertexMover(self, self.__graph)
         else:
             self.__vertex_mover.show()
 
        
-    def _create_zoom_slider(self):
-        self._zoom_label = ttk.Label(self, text="Zoom")
-        self._zoom_label.pack(side='top',pady=(5,3))
-        self._zoom_slider = ttk.Scale(self, from_=400.0, to=0.1, orient="horizontal", command=self._update_zoom)
-        self._zoom_slider.set(2)#canvas.zoom
-        self._zoom_slider.pack(pady=3, padx=5, fill='x')
+    def __create_zoom_slider(self, variable):
+        self.__zoom_label = ttk.Label(self, text="Zoom")
+        self.__zoom_label.pack(side='top',pady=(5,3))
+        self.__zoom_slider = ttk.Scale(self, variable=variable, from_=400.0, to=0.1, orient="horizontal", command=self.__canvas.redraw)
+        self.__zoom_slider.set(2)#canvas.zoom
+        self.__zoom_slider.pack(pady=3, padx=5, fill='x')
 
-    def _update_zoom(self, *args):
-        self._canvas.zoom = self._zoom_slider.get()
-        self._canvas.redraw()
 
-    def _create_rotation_interface(self):
-        self.__rotation_interface = RotationInterface(self, self._canvas, self.__graph)
+    def __create_rotation_interface(self):
+        self.__rotation_interface = RotationInterface(self, self.__canvas, self.__graph)
        
-    def activate(self):
-        for widget in self.__widgets:
-            widget.config(state="normal")
-            
 
-    def disable(self):
-        for widget in self.__widgets:
-            widget.config(state="disabled")
-
-
-
-class GUI():
+class GUI(tk.Tk):
     def __init__(self):
-        self._root = tk.Tk()
-        self._root.geometry("1280x720")
+        super().__init__()
+        self.geometry("1280x720")
         sv_ttk.set_theme("dark")
+        self.__canvas = None
+        self.__graph = Graph()
 
-        self._graph = Graph()
+        self.__create_widgets()
+        self.mainloop()
 
-        self._create_widgets()
-        self._root.mainloop()
-
-    def _create_widgets(self):
-        self._create_canvas()
-        self._create_import_button()
-        self._create_controls()
+    def __create_widgets(self):
+        self.__create_canvas()
+        self.__create_import_button()
         
-    def _create_controls(self):
-        self.__controls = Controls(self._root, rely=0.06,relheight=0.92, canvas=self._canvas, graph=self._graph)
+    def __create_controls(self):
+        self.__controls = Controls(self, rely=0.06,relheight=0.92, canvas=self.__canvas, graph=self.__graph)
 
-    def _create_canvas(self):
-        self._canvas = Canvas(self._root)
+    def __create_canvas(self):
+        self.__canvas = Canvas(self)
        
-    def _create_import_button(self):
-        self._import_graph_button = ttk.Button(self._root, text='Import graph', command=self._import_graph)
-        self._import_graph_button.place(relx=0.905, rely=0.0015, relwidth=0.15, relheight=0.05, anchor='n')
+    def __create_import_button(self):
+        self.__import_graph_button = ttk.Button(self, text='Import graph', command=self.__import_graph)
+        self.__import_graph_button.place(relx=0.905, rely=0.0015, relwidth=0.15, relheight=0.05, anchor='n')
 
-    def _import_graph(self):
+    def __import_graph(self):
         filename = tk.filedialog.askopenfilename(defaultextension = ".txt",
                                                  filetypes = (("Text Files", "*.txt"),
                                                               ("All Files", "*.*")))
-#        self._graph = Graph(filename)
 
-     #   if(self._graph.read(filename)):
-         #   self._canvas_redraw()
-        #    self.vertex_mover = VertexMover(self._root, self._graph)
-        self.__controls.activate()
-
-    def _canvas_update(self):
-        self._canvas.redraw()
+        if(self.__graph.read(filename)):
+            self.__create_controls()
+            self.__canvas.redraw()
+        else:
+            self.messagebox.showerror(title=None, message="Некоректні дані")
 
 
 if __name__ == "__main__":
