@@ -165,15 +165,22 @@ class RotationInterface(ttk.Frame):
 
 
 class MovingInterface(ttk.Frame):
-    def __init__(self, root, canvas, graph):
+    def __init__(self, root, canvas):
         super().__init__(root)
         self.pack(pady=5, fill='x', padx=5)
-        self.__canvas = canvas
-        self.__create_widgets()
+        self.canvas = canvas
+        self.__create_move_buttons()
 
-    def __create_widgets(self):
-        pass
-
+    def __create_move_buttons(self):
+        ttk.Button(self, text="⬆", command=self.canvas.move_up).grid(row=0, column=1, pady=5)
+        ttk.Button(self, text="⬅", command=self.canvas.move_left).grid(row=1, column=0, pady=5)
+        ttk.Button(self, text="⮕", command=self.canvas.move_right).grid(row=1, column=2, pady=5)
+        ttk.Button(self, text="⬇", command=self.canvas.move_down).grid(row=2, column=1, pady=5)
+        
+        self.columnconfigure(0, weight=1)
+        self.columnconfigure(2, weight=1)
+        self.rowconfigure(0, weight=1)
+        self.rowconfigure(2, weight=1)
 
 
 class Controls(ttk.Frame):
@@ -190,6 +197,7 @@ class Controls(ttk.Frame):
         self.__create_vertex_mover_button()
         self.__create_zoom_slider(self.__canvas.zoom)
         self.__create_rotation_interface()
+        self.__create_moving_interface()
 
     def __create_vertex_mover_button(self):
         ttk.Button(self, text='Move vertex', command=self.__create_vertex_mover, state='normal').pack(side='top', pady=2)
