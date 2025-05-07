@@ -7,6 +7,8 @@ class Canvas(tk.Canvas):
         self.x_rot_angle = tk.DoubleVar(value=0)
         self.y_rot_angle = tk.DoubleVar(value=0)
         self.z_rot_angle = tk.DoubleVar(value=0)
+        
+        self.position = [0,0]
 
     def redraw(self, *args):
         print(f"{self.zoom.get()=}\n{self.x_rot_angle.get()=}\n{self.y_rot_angle.get()=}\n{self.z_rot_angle.get()=}")

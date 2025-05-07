@@ -2,10 +2,10 @@ from tkinter import *
 
 class Vertex:
     def __init__(self, x0, y0, z0, number):
-        self._x = x0
-        self._y = y0
-        self._z = z0
-        self._number = number
+        self.x = x0
+        self.y = y0
+        self.z = z0
+        self.number = number
 
         self.out_edges = []
         self.in_edges = []
@@ -14,6 +14,10 @@ class Vertex:
         self.screen_y = 0
 
         self.canvas_id = None  # id овала вершини на Canvas
+
+    def move_to(self, x0, y0, z0):
+        self.x, self.y, self.z = x0, y0, z0
+        self.draw()
 
     def project_point(self, x0, y0, z0): #ізометричне спотворення
         scale = 40
