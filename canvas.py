@@ -10,6 +10,18 @@ class Canvas(tk.Canvas):
         
         self.position = [0,0]
 
+    def move_up(self):
+        pass
+
+    def move_down(self):
+        pass
+
+    def move_right(self):
+        pass
+
+    def move_left(self):
+        pass
+
     def redraw(self, *args):
         print(f"{self.zoom.get()=}\n{self.x_rot_angle.get()=}\n{self.y_rot_angle.get()=}\n{self.z_rot_angle.get()=}")
         pass
