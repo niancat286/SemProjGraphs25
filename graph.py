@@ -1,4 +1,3 @@
-from collections import defaultdict
 from geometry import generate_points
 from vertex import Vertex
 from edge import Edge
@@ -6,29 +5,55 @@ class Graph:
     def __init__(self, canvas, filename = None):
         self.canvas = canvas
         self.N = 0
-        if filename is not None:
-            matrix = self.read_matrix_with_limits(filename)
-            self._matrix_adjacency = self.read(matrix)
-        else:
-            self._matrix_adjacency = []
+        self._matrix_adjacency = []
 
+        if filename is not None:
+            matrix, success = self.read_matrix_with_limits(filename)
+            if success:
+                self._matrix_adjacency = self.read(matrix)
+            else:
+                print(f"[Помилка] Не вдалося зчитати файл: {filename}")
 
     def read_matrix_with_limits(self, filename, max_rows=15, max_cols=7):
         matrix = []
-        with open(filename, 'r') as file:
-            for line in file:
-                if len(matrix) >= max_rows:
-                    break
-                row = list(map(int, line.strip().split()))
-                matrix.append(row[:max_cols])
-        return matrix
+        try:
+            with open(filename, 'r') as file:
+                for line_number, line in enumerate(file, start=1):
+                    if len(matrix) >= max_rows:
+                        break
+
+                    parts = line.strip().split()
+                    if not parts:
+                        continue
+
+                    if any(not part.isdigit() for part in parts):
+                        raise ValueError(f"Нечислове значення в рядку {line_number}: {line.strip()}")
+
+                    row = list(map(int, parts))
+                    if any(x < 1 for x in row):
+                        raise ValueError(f"Значення менше 1 в рядку {line_number}: {line.strip()}")
+
+                    matrix.append(row[:max_cols])  # не більше 7 елементів
+
+            for i in range(1, len(matrix)):
+                if len(matrix[i-1]) != len(matrix[i]):
+                    raise ValueError(f"Значень в рядках неоднакова кількість")
+
+            return matrix, True
+
+        except ValueError as e:
+            print(f"[Помилка даних] {e}")
+            return [], False
+        except FileNotFoundError:
+            print("[Файл не знайдено]")
+            return [], False
 
     def read(self, matrix):
-        adj = defaultdict(lambda: defaultdict(list))  # adj[src][dst] = [edge_numbers]
+        adj = defaultdict(lambda: defaultdict(list))
 
-        for i, row in enumerate(matrix):  # i — джерело, вершина i+1
+        for i, row in enumerate(matrix):  # вершина i+1
             src = i + 1
-            for j, dst in enumerate(row):  # j — номер ребра (з 0), dst — вершина призначення
+            for j, dst in enumerate(row):  # ребро j → dst
                 adj[src][dst].append(j)
         self.N = len(matrix)
         self.create_elements(adj)
@@ -67,8 +92,7 @@ class Graph:
             row = []
             for j in vertices:
                 row.append(self._matrix_adjacency[i].get(j, []))
-            line += (f"{i}: {row} \n")
-
+            line += f"{i}: {row} \n"
         return line
 
 
