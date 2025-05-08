@@ -5,6 +5,7 @@ class Vertex:
         self.x = x0
         self.y = y0
         self.z = z0
+        self.r = 20
         self.number = number
 
         self.out_edges = []
@@ -30,7 +31,7 @@ class Vertex:
         if redraw:
             for edge in self.out_edges+self.in_edges:
                 edge.draw()
-        self.canvas_id, self.label_id = self.canvas.draw_circle(self.screen_x, self.screen_y, text = str(self.number))
+        self.canvas_id, self.label_id = self.canvas.draw_circle(self.screen_x, self.screen_y, r = self.r - self.canvas.zoom.get()/40, text = str(self.number))
 
     def project_point(self, x0, y0, z0): #ізометричне спотворення
         scale = 40
