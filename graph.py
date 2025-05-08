@@ -1,6 +1,8 @@
 from geometry import generate_points
 from vertex import Vertex
 from edge import Edge
+from collections import defaultdict
+
 class Graph:
     def __init__(self, canvas, filename = None):
         self.canvas = canvas
@@ -82,9 +84,6 @@ class Graph:
         for edge in self.edges:
             edge.draw()
 
-            
-
-
     def __str__(self):
         line = ''
         vertices = sorted(set(i for i in self._matrix_adjacency) | {v for d in self._matrix_adjacency.values() for v in d})
@@ -94,8 +93,6 @@ class Graph:
                 row.append(self._matrix_adjacency[i].get(j, []))
             line += f"{i}: {row} \n"
         return line
-
-
 
     def give_vertex(self, v):
         return self.vertices[v]
