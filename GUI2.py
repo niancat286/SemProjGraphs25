@@ -15,7 +15,7 @@ class VertexMover(tk.Toplevel):
         self.geometry("-50+50")
 
         self.__graph = graph
-        self.__N = N
+        self.__N = self.__graph.N
         self.__vertex = None
         
         self.__create_widgets()
@@ -40,28 +40,29 @@ class VertexMover(tk.Toplevel):
     def __create_movers(self):
         frame = ttk.Frame(self)
         frame.pack(pady=5,padx=5, fill='x')
-        self.__x_spinbox = self.__create_spinbox(frame,0,'X:', self.move_vertex)
+        self.__x_spinbox, self.__x_var = self.__create_spinbox(frame,0,'X:', self.move_vertex)
         frame.grid_columnconfigure(1, weight=1)  
-        self.__y_spinbox = self.__create_spinbox(frame,2,'Y:', self.move_vertex)
+        self.__y_spinbox, self.__y_var  = self.__create_spinbox(frame,2,'Y:', self.move_vertex)
         frame.grid_columnconfigure(3, weight=1) 
-        self.__z_spinbox = self.__create_spinbox(frame,4,'Z:', self.move_vertex)
+        self.__z_spinbox, self.__z_var  = self.__create_spinbox(frame,4,'Z:', self.move_vertex)
         frame.grid_columnconfigure(5, weight=1)
 
 
     def __create_spinbox(self, frame,column, text, command):
         ttk.Label(frame, text=text).grid(row=0,column=column, padx=2)
         c_vcmd = (self.register(self.on_validate_coord), '%P')
-        spinbox = ttk.Spinbox(frame, from_ = -100*self.__N, to = 100*self.__N, state="disabled", command=command, validate='all', validatecommand=c_vcmd)
+        var = tk.StringVar(value='')
+        spinbox = ttk.Spinbox(frame, textvariable=var, from_ = -100*self.__N, to = 100*self.__N, state="disabled", command=command, validate='all', validatecommand=c_vcmd)
         spinbox.grid(row=0, column=column+1,padx=2)
         spinbox.bind('<Enter>', command)
-        return spinbox
+        return spinbox, var
         
        # c_vcmd = self._root.register(self.on_validate_coord, '%P')
     
     def __create_close_button(self):
         ttk.Button(self, text='Close window', command=self.destroy).pack(side='top', expand=True)
 
-    def move_vertex(self, event):
+    def move_vertex(self, *args):
         x,y,z = self.__x_spinbox.get(), self.__y_spinbox.get(), self.__z_spinbox.get()
         if x == '' or y == '' or z == '':
             return
@@ -84,11 +85,11 @@ class VertexMover(tk.Toplevel):
         except ValueError:
             return c == ""
 
-    def on_focus_in(self, event):
+    def on_focus_in(self, *args):
         if not self.__entry_value.get().isdigit():
             self.__entry_value.set("")
 
-    def on_focus_out(self, event):
+    def on_focus_out(self, *args):
         if self.__entry_value.get() == '':
             self.__entry_value.set("Input vertex")
 
@@ -101,10 +102,19 @@ class VertexMover(tk.Toplevel):
         else:
             self.__vertex = None
             state = "disabled"
+        self.set_state(state)
 
+    def set_state(self, state):
         self.__x_spinbox.config(state=state)
         self.__y_spinbox.config(state=state)
         self.__z_spinbox.config(state=state)
+        self.set_values(zero= (state=='disabled'))
+
+    def set_values(self, zero=False):
+        self.__x_var.set(0 if zero else self.__vertex.x)
+        self.__y_var.set(0 if zero else self.__vertex.y)
+        self.__z_var.set(0 if zero else self.__vertex.z)
+
 
     def move_x(self):
         x = float(self.__x_value.get())
