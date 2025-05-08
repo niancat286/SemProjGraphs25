@@ -1,8 +1,9 @@
-from collections import defaultdict
-
-
+from geometry import generate_points
+from vertex import Vertex
+from edge import Edge
 class Graph:
-    def __init__(self, filename=None):
+    def __init__(self, canvas, filename = None):
+        self.canvas = canvas
         self.N = 0
         self._matrix_adjacency = []
 
@@ -54,8 +55,35 @@ class Graph:
             src = i + 1
             for j, dst in enumerate(row):  # ребро j → dst
                 adj[src][dst].append(j)
-
+        self.N = len(matrix)
+        self.create_elements(adj)
         return adj
+
+    def create_elements(self, adj):
+        self.vertices = [-1,]
+        self.edges = []
+        coords = generate_points(self.N)
+        print(coords)
+        for i in range(self.N):
+            self.vertices.append(Vertex(*coords[i], number = i+1, canvas = self.canvas))
+        j=-1
+        for src in adj:
+            for dst in adj[src]:
+                self.edges.append(Edge(self.vertices[src], self.vertices[dst], edge_id = adj[src][dst], canvas = self.canvas))
+                j+=1
+                self.vertices[src].out_edges.append(self.edges[j])
+                self.vertices[dst].in_edges.append(self.edges[j])
+        return
+
+    def draw(self, *args):
+        for vertex in self.vertices[1:]:
+            vertex.draw()
+
+        for edge in self.edges:
+            edge.draw()
+
+            
+
 
     def __str__(self):
         line = ''
@@ -70,7 +98,8 @@ class Graph:
 
 
     def give_vertex(self, v):
-            pass
+        return self.vertices[v]
+        pass
 
 
 if __name__ == '__main__':
