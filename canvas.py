@@ -53,11 +53,11 @@ class Canvas(tk.Canvas):
 
     def move_right(self, step=1):
         self.scan_mark(0,0)
-        self.scan_dragto(self.position[0]-step, self.position[1])
+        self.scan_dragto(self.position[0]+step, self.position[1])
 
     def move_left(self, step=1):
         self.scan_mark(0,0)
-        self.scan_dragto(self.position[0]+step, self.position[1])
+        self.scan_dragto(self.position[0]-step, self.position[1])
 
 
     def project_point(self, x0, y0, z0):
