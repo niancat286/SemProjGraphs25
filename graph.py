@@ -14,7 +14,7 @@ class Graph:
             if success:
                 self._matrix_adjacency = self.read(matrix)
                 self.N = len(matrix)
-                self.create_elements(adj)
+                self.create_elements(self._matrix_adjacency)
             else:
                 print(f"[Помилка] Не вдалося зчитати файл: {filename}")
 
