@@ -8,6 +8,7 @@ class Canvas(tk.Canvas):
 #        self.place(x=0.01, y=0.01, width=1024, height=648)
         
 
+        self.__implement_mouse_dragging()
 
         self.zoom = tk.DoubleVar(value=50)
         self.x_rot_angle = tk.DoubleVar(value=0)
@@ -17,6 +18,12 @@ class Canvas(tk.Canvas):
         self.position = [0,0]
 
         print(f"{self.__getitem__('width')=}\n{self.__getitem__('height')=}")
+
+    def __implement_mouse_dragging(self):
+        self.bind("<ButtonPress-1>", lambda e: self.scan_mark(e.x, e.y))
+        self.bind("<B1-Motion>",    lambda e: self.scan_dragto(e.x, e.y, gain=1))
+
+
 
     def draw_line(self, x0, y0, x1, y1, width=1, color='blue'):
     
