@@ -228,7 +228,7 @@ class Controls(ttk.Frame):
     def __create_zoom_slider(self, variable):
         ttk.Label(self, text="Zoom").pack(side='top',pady=(5,3))
 
-        ttk.Scale(self, variable=variable, from_=400.0, to=0.1, orient="horizontal", command=self.__graph.draw).pack(pady=3, padx=5, fill='x')
+        ttk.Scale(self, variable=variable, from_=400.0, to=10, orient="horizontal", command=self.__graph.draw).pack(pady=3, padx=5, fill='x')
 
 
     def __create_rotation_interface(self):
