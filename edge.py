@@ -1,3 +1,6 @@
+import math
+import tkinter as tk
+
 class Edge:
     def __init__(self, vertex1, vertex2, edge_id, canvas):
         self.__v1 = vertex1
@@ -12,9 +15,21 @@ class Edge:
         if self.canvas_id is not None:
             self.canvas.delete(self.canvas_id)
             #self.canvas.delete(self.label_id)
-        x0,y0 = self.__v1.screen_x, self.__v1.screen_y
-        x1,y1 = self.__v2.screen_x, self.__v2.screen_y
-        self.canvas_id = self.canvas.draw_line(x0,y0,x1,y1)
+        x0, y0 = self.__v1.screen_x, self.__v1.screen_y
+        x1, y1 = self.__v2.screen_x, self.__v2.screen_y
+
+        dx = x1 - x0
+        dy = y1 - y0
+        dist = math.sqrt(dx ** 2 + dy ** 2)
+        if dist == 0:
+            return
+        r = self.__v1.r - self.canvas.zoom.get()/40
+        new_x0 = x0 + dx * r / dist
+        new_y0 = y0 + dy * r / dist
+        new_x1 = x1 - dx * r / dist
+        new_y1 = y1 - dy * r / dist
+
+        self.canvas_id = self.canvas.draw_line(new_x0, new_y0, new_x1, new_y1)
 
     def add_paralel(self, edge_id):
         self.ids.append(edge_id)
