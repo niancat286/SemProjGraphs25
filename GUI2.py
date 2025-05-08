@@ -144,7 +144,7 @@ class RotationInterface(ttk.Frame):
         slider_frame = ttk.Frame(self)
         slider_frame.pack(pady=2,fill='x')
         ttk.Label(slider_frame, text=text).grid(row=0, column=0, sticky='w',padx=2)
-        ttk.Scale(slider_frame, variable=variable, from_=-PI, to=PI, command=self.__canvas.redraw()).grid(row=0, column=1, sticky='ew', padx=2)
+        ttk.Scale(slider_frame, variable=variable, from_=-PI, to=PI, command=self.__graph.draw).grid(row=0, column=1, sticky='ew', padx=2)
         slider_frame.columnconfigure(1, weight=1)
         return
 
@@ -218,7 +218,7 @@ class Controls(ttk.Frame):
     def __create_zoom_slider(self, variable):
         ttk.Label(self, text="Zoom").pack(side='top',pady=(5,3))
 
-        ttk.Scale(self, variable=variable, from_=400.0, to=0.1, orient="horizontal", command=self.__canvas.redraw).pack(pady=3, padx=5, fill='x')
+        ttk.Scale(self, variable=variable, from_=400.0, to=0.1, orient="horizontal", command=self.__graph.draw).pack(pady=3, padx=5, fill='x')
 
 
     def __create_rotation_interface(self):
@@ -259,19 +259,26 @@ class GUI(tk.Tk):
      #   self.__create_controls()
      #   self.__canvas.redraw()
 
-
-        try:
-            self.__graph = Graph(filename)
-            self.__create_controls()
-            self.__canvas.redraw()
-        except Exception as e:
-            tk.messagebox.showerror(title=None, message="Некоректні дані")
-            #return
-            # the next line is for debugging purposes
-            self.__graph = Graph()
-
+        self.__graph = Graph(self.__canvas, filename)
+        self.__graph.draw()
         self.__create_controls()
         self.__canvas.redraw()
+
+
+       # try:
+       #     self.__graph = Graph(self.__canvas, filename)
+       #     self.__graph.draw()
+       #     self.__create_controls()
+       #     self.__canvas.redraw()
+       # except Exception as e:
+       #     print(e)
+       #     tk.messagebox.showerror(title=None, message="Некоректні дані")
+       #     #return
+       #     # the next line is for debugging purposes
+       #     self.__graph = Graph(self.__canvas)
+
+       # self.__create_controls()
+       # self.__canvas.redraw()
 
 
       #  if(self.__graph.read(filename)):
