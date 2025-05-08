@@ -11,6 +11,8 @@ class Graph:
             matrix, success = self.read_matrix_with_limits(filename)
             if success:
                 self._matrix_adjacency = self.read(matrix)
+                self.N = len(matrix)
+                self.create_elements(adj)
             else:
                 print(f"[Помилка] Не вдалося зчитати файл: {filename}")
 
@@ -55,8 +57,6 @@ class Graph:
             src = i + 1
             for j, dst in enumerate(row):  # ребро j → dst
                 adj[src][dst].append(j)
-        self.N = len(matrix)
-        self.create_elements(adj)
         return adj
 
     def create_elements(self, adj):
