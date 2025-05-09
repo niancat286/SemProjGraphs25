@@ -11,6 +11,11 @@ class Canvas(tk.Canvas):
         self.__implement_mouse_dragging()
 
         self.zoom = tk.DoubleVar(value=50)
+        
+        self.__x_rot_fixed = 0
+        self.__y_rot_fixed = 0
+        self.__z_rot_fixed = 0
+
         self.x_rot_angle = tk.DoubleVar(value=0)
         self.y_rot_angle = tk.DoubleVar(value=0)
         self.z_rot_angle = tk.DoubleVar(value=0)
@@ -48,7 +53,18 @@ class Canvas(tk.Canvas):
         return point, label
 
 
-       
+    def reset_rotation(self, *args):
+        self.x_rot_angle.set(self.__x_rot_fixed)
+        self.y_rot_angle.set(self.__y_rot_fixed)
+        self.z_rot_angle.set(self.__z_rot_fixed)
+
+    def fix_rotation(self, *args):
+        self.__x_rot_fixed = self.x_rot_angle.get()
+        self.__y_rot_fixed = self.y_rot_angle.get()
+        self.__z_rot_fixed = self.z_rot_angle.get()
+
+
+
 
     def move_up(self, step=1):
         self.scan_mark(0,0)
