@@ -74,7 +74,7 @@ class VertexMover(tk.Toplevel):
         try:
             #print(s)
             digit = int(s)
-            return 0 < digit <= self.__N
+            return 0 < digit <= self.N
         except ValueError:
             return s == ""
 
@@ -97,7 +97,7 @@ class VertexMover(tk.Toplevel):
         s = self.__entry_value.get()
         if s.isdigit():
             v = int(s)
-            self.vertex = self.__graph.give_vertex(v)
+            self.vertex = self.graph.give_vertex(v)
             state = "normal"      
         else:
             self.vertex = None
@@ -147,10 +147,16 @@ class RotationInterface(ttk.Frame):
         btn_frame = ttk.Frame(self)
         btn_frame.pack(pady=1, fill='x')
 
-        ttk.Button(btn_frame, text="Reset", command=self.canvas.reset_rotation).pack(side='right',expand=True)
-        ttk.Button(btn_frame, text="Fix", command=self.canvas.fix_rotation).pack(side='right',expand=True)
+        ttk.Button(btn_frame, text="Reset", command=self.reset_rotation).pack(side='right',expand=True)
+        ttk.Button(btn_frame, text="Fix", command=self.fix_rotation).pack(side='right',expand=True)
 
+    def reset_rotation(self, *args):
+        self.canvas.reset_rotation()
+        self.graph.draw()
 
+    def fix_rotation(self, *args):
+        self.canvas.fix_rotation()
+        self.graph.draw()
 
 
 
@@ -249,9 +255,14 @@ class GUI(tk.Tk):
      #   self.__create_controls()
      #   self.__canvas.redraw()
 
-        self.graph = Graph(self.canvas, filename)
+        try:
+            self.graph = Graph(self.canvas, filename)
+        except Exception as e:
+            print(e)
+            tk.messagebox.showerror(title=None, message="Некоректні дані")
+            return
         self.graph.draw()
-        self.create_controls()
+        self.__create_controls()
         self.canvas.redraw()
 
 

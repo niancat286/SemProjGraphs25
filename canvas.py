@@ -54,15 +54,15 @@ class Canvas(tk.Canvas):
 
 
     def reset_rotation(self, *args):
-        self.x_rot_angle.set(self.__x_rot_fixed)
-        self.y_rot_angle.set(self.__y_rot_fixed)
-        self.z_rot_angle.set(self.__z_rot_fixed)
+        self.x_rot_angle.set(0)
+        self.y_rot_angle.set(0)
+        self.z_rot_angle.set(0)
 
     def fix_rotation(self, *args):
-        self.__x_rot_fixed = self.x_rot_angle.get()
-        self.__y_rot_fixed = self.y_rot_angle.get()
-        self.__z_rot_fixed = self.z_rot_angle.get()
-
+        self.__x_rot_fixed += self.x_rot_angle.get()
+        self.__y_rot_fixed += self.y_rot_angle.get()
+        self.__z_rot_fixed += self.z_rot_angle.get()
+        self.reset_rotation()
 
 
 
@@ -102,9 +102,20 @@ class Canvas(tk.Canvas):
         y = -int(projected_2d[1][0] * self.scale)
 
         return x, y
-    
+   
+    def __simplify_angle(self, angle_fixed, angle):
+        PI_2 = 6.283185307
+        angle = angle_fixed + angle
+        k = -1 if angle < 0 else 1
+        angle = abs(angle)
+        while(angle > PI_2):
+            angle -= PI_2
+        return angle * k 
+
     def calculate_matrices(self):
-        angle_x, angle_y, angle_z = self.x_rot_angle.get(), self.y_rot_angle.get(), self.z_rot_angle.get()
+        angle_x = self.__simplify_angle(self.__x_rot_fixed, self.x_rot_angle.get())
+        angle_y = self.__simplify_angle(self.__y_rot_fixed, self.y_rot_angle.get())
+        angle_z = self.__simplify_angle(self.__z_rot_fixed, self.z_rot_angle.get())
 
         rotation_x =    [[1, 0, 0],
                         [0, math.cos(angle_x), -math.sin(angle_x)],
