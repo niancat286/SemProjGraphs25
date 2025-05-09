@@ -7,14 +7,14 @@ class Graph:
     def __init__(self, canvas, filename = None):
         self.canvas = canvas
         self.N = 0
-        self._matrix_adjacency = []
+        self.__matrix_adjacency = []
 
         if filename is not None:
             matrix, success = self.read_matrix_with_limits(filename)
             if success:
-                self._matrix_adjacency = self.read(matrix)
+                self.__matrix_adjacency = self.read(matrix)
                 self.N = len(matrix)
-                self.create_elements(self._matrix_adjacency)
+                self.create_elements(self.__matrix_adjacency)
             else:
                 print(f"[Помилка] Не вдалося зчитати файл: {filename}")
 
@@ -86,17 +86,16 @@ class Graph:
 
     def __str__(self):
         line = ''
-        vertices = sorted(set(i for i in self._matrix_adjacency) | {v for d in self._matrix_adjacency.values() for v in d})
+        vertices = sorted(set(i for i in self.__matrix_adjacency) | {v for d in self.__matrix_adjacency.values() for v in d})
         for i in vertices:
             row = []
             for j in vertices:
-                row.append(self._matrix_adjacency[i].get(j, []))
+                row.append(self.__matrix_adjacency[i].get(j, []))
             line += f"{i}: {row} \n"
         return line
 
     def give_vertex(self, v):
         return self.vertices[v]
-        pass
 
 
 if __name__ == '__main__':
