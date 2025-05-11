@@ -287,6 +287,8 @@ class GUI(tk.Tk):
      #   self.__create_controls()
      #   self.__canvas.redraw()
 
+        self.graph = Graph(self.canvas, filename)
+
         try:
             self.graph = Graph(self.canvas, filename)
         except Exception as e:

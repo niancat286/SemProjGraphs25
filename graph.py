@@ -9,6 +9,7 @@ class Graph:
         self.N = 0
         self.__matrix_adjacency = []
 
+        self.elements = []
         if filename is not None:
             matrix, success = self.read_matrix_with_limits(filename)
             if success:
@@ -77,14 +78,34 @@ class Graph:
                 self.vertices[dst].in_edges.append(self.edges[j])
         return
 
+    def sort_elements(self, elements):
+        return sorted(elements, key=lambda element: -element.compare_z)
+
     def draw(self, *args):
+        for element in self.elements:
+            element.erase()
+        elements = []
+        elements += self.vertices[1:]
         for vertex in self.vertices[1:]:
             vertex.calc_projection()
         for edge in self.edges:
-            edge.draw()
-        for vertex in self.vertices[1:]:
-            vertex.draw(redraw=0)
+            segments = edge.calc_segments()
+            elements += segments
+        #self.print_els(elements)
 
+        elements = self.sort_elements(elements)
+        #print('after_sort:\n')
+        #self.print_els(elements)
+
+        for element in elements:
+            element.draw()
+        self.elements = elements
+
+    def print_els(self, els):
+        print('[')
+        for el in els:
+            print(f'{el.compare_z=}',end=' ')
+        print('\n]')
 
     def __str__(self):
         line = ''

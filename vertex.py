@@ -6,8 +6,9 @@ class Vertex:
         self.x = x0
         self.y = y0
         self.z = z0
-        self.r = 5 #radius
+        self.r = 2 #radius
         self.number = number
+        self.compare_z = z0-self.r
         self.color = 'paleturquoise2'
         self.t_color = 'black'
         self.out_edges = []
@@ -27,17 +28,20 @@ class Vertex:
     def move_to(self, x0, y0, z0):
         self.x, self.y, self.z = x0, y0, z0
 #        self.draw()
-        
-    def draw(self, redraw=1):
+    def erase(self):
         if self.canvas_id is not None:
             self.canvas.delete(self.canvas_id)
             self.canvas.delete(self.label_id)
 
+    
+    def draw(self, redraw=0):
 
+        self.erase()
         if redraw:
             self.calc_projection()
             for edge in self.out_edges+self.in_edges:
                 edge.draw()
+
         if(self.P0[0] == None):
             self.canvas_id = self.label_id = None
             return
@@ -55,6 +59,8 @@ class Vertex:
     def calc_projection(self):
         self.transformed  = self.canvas.transform_point(self.x, self.y, self.z)
         x0, y0, z0 = self.transformed
+        self.compare_z = z0-self.r
+
         eps = 0.001
         r = self.r
         scale = self.canvas.scale
@@ -80,6 +86,7 @@ class Vertex:
                 self.c = [0,0]
                 self.P0 = [t*scale, t*scale]
                 self.P1 = [-t*scale, -t*scale]
+
                 return
             a = z1*r*((x0**2 + y0**2 + z0**2 - r**2)**(1/2)) / (z0**2 - r**2)
             b = z1*r / ((x0**2 + y0**2 + z0**2 - r**2)**(1/2))
