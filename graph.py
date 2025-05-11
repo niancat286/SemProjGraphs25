@@ -79,10 +79,12 @@ class Graph:
 
     def draw(self, *args):
         for vertex in self.vertices[1:]:
-            vertex.draw()
-
+            vertex.calc_projection()
         for edge in self.edges:
             edge.draw()
+        for vertex in self.vertices[1:]:
+            vertex.draw(redraw=0)
+
 
     def __str__(self):
         line = ''

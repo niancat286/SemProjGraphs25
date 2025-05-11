@@ -2,16 +2,15 @@ import math
 import numpy as np
 import tkinter as tk
 class Canvas(tk.Canvas):
-    def __init__(self, root):
+    def __init__(self, root, graph = None):
         super().__init__(root,  bg="#FFFFFF")
-        self.place(relx=0.01, rely=0.01,relwidth=0.8, relheight=0.9)
+        self.place(relx=0.01, rely=0.01,relwidth=0.8, relheight=0.98)
 #        self.place(x=0.01, y=0.01, width=1024, height=648)
         
-
+        self.graph = graph
         self.__implement_mouse_dragging()
-
-        self.zoom = tk.DoubleVar(value=50)
-        
+        self.zoom = tk.DoubleVar(value=0)
+        self.__zoom_fixed = 0        
         self.__x_rot_fixed = 0
         self.__y_rot_fixed = 0
         self.__z_rot_fixed = 0
@@ -19,87 +18,101 @@ class Canvas(tk.Canvas):
         self.x_rot_angle = tk.DoubleVar(value=0)
         self.y_rot_angle = tk.DoubleVar(value=0)
         self.z_rot_angle = tk.DoubleVar(value=0)
-        self.scale = 1000
+        self.scale = 100
         self.position = [0,0]
 
+        self.clipping_z = 20
+        
+        
+        self.bind("<Configure>", self.setup_centered_coordinates)
+        self.setup_centered_coordinates()
+
+#        self.create_oval(0-20, 0-20, 0+20, 0+20, fill= 'blue')
+
         print(f"{self.__getitem__('width')=}\n{self.__getitem__('height')=}")
+        
+   
+    def setup_centered_coordinates(self, event=None):
+        W = self.winfo_width()
+        H = self.winfo_height()
+        self.configure(scrollregion=(-W/2, -H/2, W/2, H/2))
+        self.xview_moveto(0.5)
+        self.yview_moveto(0.5)
+    
 
     def __implement_mouse_dragging(self):
-        self.bind("<ButtonPress-1>", lambda e: self.scan_mark(e.x, e.y))
-        self.bind("<B1-Motion>",    lambda e: self.scan_dragto(e.x, e.y, gain=1))
+        self.bind("<ButtonPress-1>", self.on_click)
+        self.bind("<B1-Motion>",  self.on_motion)
 
 
+    def on_click(self, e):
+        self.click_x = e.x/self.scale
+        self.click_y = e.y/self.scale
 
-    def draw_line(self, x0, y0, x1, y1, width=1, color='blue'):
-    
-        return self.create_line(x0,y0, x1,y1, width=width, fill=color, arrow=tk.LAST)
+    def on_motion(self, e):
+        x, y = e.x/self.scale, e.y/self.scale
+        self.position[0] += x-self.click_x
+        self.position[1] -= y-self.click_x
+        self.graph.draw()
+        self.click_x = x
+        self.click_y = y
 
-
-    def draw_circle(self, x, y, r=10, color='paleturquoise2', text=None, text_color='black'):
-        point = self.create_oval(
-            x - r, y - r,
-            x + r, y + r,
-            fill = color,
-            outline=''
-        )
-        if(text == None):
-            return
-        label = self.create_text(
-            x, y,
-            text = text,
-            fill = text_color,
-            anchor = 'center'
-        )
-        return point, label
-
-
-    def reset_rotation(self, *args):
+    def reset_rotation(self):
         self.x_rot_angle.set(0)
         self.y_rot_angle.set(0)
         self.z_rot_angle.set(0)
 
-    def fix_rotation(self, *args):
+    def fix_rotation(self):
         self.__x_rot_fixed += self.x_rot_angle.get()
         self.__y_rot_fixed += self.y_rot_angle.get()
         self.__z_rot_fixed += self.z_rot_angle.get()
         self.reset_rotation()
 
+    def fix_zoom(self):
+        self.__zoom_fixed += self.zoom.get()
+        self.reset_zoom()
+
+    def reset_zoom(self):
+        self.zoom.set(0)
 
 
     def move_up(self, step=1):
-        self.scan_mark(0,0)
-        self.scan_dragto(self.position[0], self.position[1]-step)
+        self.position[1] += step/self.scale
 
     def move_down(self, step=1):
-        self.scan_mark(0,0)
-        self.scan_dragto(self.position[0], self.position[1]+step)
+        self.position[1] -= step/self.scale
+
 
     def move_right(self, step=1):
-        self.scan_mark(0,0)
-        self.scan_dragto(self.position[0]+step, self.position[1])
+        self.position[1] -= step/self.scale
 
     def move_left(self, step=1):
-        self.scan_mark(0,0)
-        self.scan_dragto(self.position[0]-step, self.position[1])
+        self.position[1] += step/self.scale
 
 
-    def project_point(self, x0, y0, z0):
+    def transform_point(self, x0, y0, z0):
         point = [[x0], [y0], [z0]]
     #    print(f"{point=} , {rotation_x=} {rotation_y=} {rotation_z=} {zoom=}")
-    
         rotation_x, rotation_y, rotation_z = self.calculate_matrices()
 
-        rotated_2d = np.matmul(rotation_y, point)
-        rotated_2d = np.matmul(rotation_x, rotated_2d)
-        rotated_2d = np.matmul(rotation_z, rotated_2d)
-    
-        z = 1/(self.zoom.get() - rotated_2d[2][0])
-        projection_matrix = [[z, 0, 0],
-                            [0, z, 0]]
-        projected_2d = np.matmul(projection_matrix, rotated_2d)
-        x = int(projected_2d[0][0] * self.scale)
-        #The (-) sign in the Y is because the canvas' Y axis starts  from Top to Bottom
-        y = -int(projected_2d[1][0] * self.scale)
+        point = np.matmul(rotation_y, point)
+        point = np.matmul(rotation_x, point)
+        point = np.matmul(rotation_z, point)
+        point[2][0] -= (self.__zoom_fixed + self.zoom.get())
+
+        return [point[0][0]+self.position[0], point[1][0]+self.position[1], point[2][0]]
+
+    def project_point(self, x0, y0, z0):
+        #_x, _y, _z = self.transform_point(x0, y0, z0)
+        if z0 < self.clipping_z:
+            return None, None
+        x = x0 * self.clipping_z / z0
+        y = y0 * self.clipping_z / z0
+
+        x *= self.scale
+        y *= self.scale
+
+        y = -y
 
         return x, y
    
