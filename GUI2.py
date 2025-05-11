@@ -68,6 +68,7 @@ class VertexMover(tk.Toplevel):
             return
         else:
             self.vertex.move_to(float(x), float(y), float(z))
+            self.graph.draw()
 
 
     def on_validate_vertex(self, s):
@@ -212,10 +213,22 @@ class Controls(ttk.Frame):
 
        
     def __create_zoom_slider(self, variable):
-        ttk.Label(self, text="Zoom").pack(side='top',pady=(5,3))
+        frame = ttk.Frame(self)
+        frame.pack(padx=3, pady=3, fill='x')
+        ttk.Label(frame, text="Zoom").pack(side='top',pady=(5,3))
+        ttk.Scale(frame, variable=variable, from_=-2000.0, to=2000, orient="horizontal", command=self.graph.draw).pack(pady=3, padx=5, fill='x')
+        btn_frame = ttk.Frame(frame)
+        btn_frame.pack(pady = 3, fill='x')
+        ttk.Button(btn_frame, text='Fix', command=self.fix_zoom).pack(side='left')
+        ttk.Button(btn_frame, text='Reset', command=self.reset_zoom).pack(side='right')
 
-        ttk.Scale(self, variable=variable, from_=400.0, to=10, orient="horizontal", command=self.graph.draw).pack(pady=3, padx=5, fill='x')
+    def fix_zoom(self, *args):
+        self.canvas.fix_zoom()
+        self.graph.draw()
 
+    def reset_zoom(self, *args):
+        self.canvas.reset_zoom()
+        self.graph.draw()
 
     def __create_rotation_interface(self):
         self.__rotation_interface = RotationInterface(self, self.canvas, self.graph)
@@ -229,9 +242,28 @@ class GUI(tk.Tk):
         super().__init__()
         self.geometry("1280x720")
         sv_ttk.set_theme("dark")
-
         self.__create_widgets()
         self.mainloop()
+
+    
+    def __implement_mouse_zooming(self):
+        root = self
+        root.bind("<MouseWheel>", self.mouse_wheel)
+        # with Linux OS
+        root.bind("<Button-4>", self.mouse_wheel)
+        root.bind("<Button-5>", self.mouse_wheel)
+        
+    def mouse_wheel(self, event):
+        # respond to Linux or Windows wheel event
+        if event.num == 5 or event.delta == -120:
+            self.zoom.set(self.zoom.get() - 1) 
+            print('down')
+        if event.num == 4 or event.delta == 120:
+            self.zoom.set(self.zoom.get() + 1)
+            print('up')
+        self.graph.draw()
+
+
 
     def __create_widgets(self):
         self.__create_canvas()
@@ -261,8 +293,11 @@ class GUI(tk.Tk):
             print(e)
             tk.messagebox.showerror(title=None, message="Некоректні дані")
             return
+        self.canvas.graph = self.graph
         self.graph.draw()
         self.__create_controls()
+        self.__implement_mouse_zooming()
+        
         self.canvas.redraw()
 
 
