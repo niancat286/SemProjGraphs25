@@ -40,7 +40,7 @@ class Edge:
         x1, y1, z1 = V1
         x2, y2, z2 = V2
         L = ((x1 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2) ** 0.5
-        N = int(L*2)+1
+        N = int(L)+1
         
         segments = []
     
@@ -69,7 +69,9 @@ class Edge:
         
             segments.append(segment)
 
-        segments[-1].arrow = arrow
+        last = segments[-1]
+        last.compare_z = min(last.P0[2], last.P1[2]) 
+        last.arrow = arrow
         return segments
 
     def calc_begin_end(self):
