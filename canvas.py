@@ -8,7 +8,6 @@ class Canvas(tk.Canvas):
 #        self.place(x=0.01, y=0.01, width=1024, height=648)
         
         self.graph = graph
-        self.__implement_mouse_dragging()
         self.zoom = tk.DoubleVar(value=0)
         self.__zoom_fixed = 0        
         self.__x_rot_fixed = 0
@@ -18,11 +17,12 @@ class Canvas(tk.Canvas):
         self.x_rot_angle = tk.DoubleVar(value=0)
         self.y_rot_angle = tk.DoubleVar(value=0)
         self.z_rot_angle = tk.DoubleVar(value=0)
-        self.scale = 100
+        self.scale = 50
         self.position = [0,0]
 
         self.clipping_z = 20
-        
+        self.__implement_mouse_dragging()
+
         
         self.bind("<Configure>", self.setup_centered_coordinates)
         self.setup_centered_coordinates()
@@ -43,19 +43,19 @@ class Canvas(tk.Canvas):
     def __implement_mouse_dragging(self):
         self.bind("<ButtonPress-1>", self.on_click)
         self.bind("<B1-Motion>",  self.on_motion)
-
+        print('mdr')
 
     def on_click(self, e):
-        self.click_x = e.x/self.scale
-        self.click_y = e.y/self.scale
+        self.click_x = e.x
+        self.click_y = e.y
 
     def on_motion(self, e):
-        x, y = e.x/self.scale, e.y/self.scale
-        self.position[0] += x-self.click_x
-        self.position[1] -= y-self.click_x
-        self.graph.draw()
+        x, y = e.x, e.y
+        self.position[0] += (x-self.click_x)
+        self.position[1] -= (y-self.click_y)
         self.click_x = x
         self.click_y = y
+        self.graph.draw()
 
     def reset_rotation(self):
         self.x_rot_angle.set(0)
@@ -76,18 +76,22 @@ class Canvas(tk.Canvas):
         self.zoom.set(0)
 
 
-    def move_up(self, step=1):
-        self.position[1] += step/self.scale
+    def move_up(self, step=5):
+        self.position[1] += step
+        self.graph.draw()
 
-    def move_down(self, step=1):
-        self.position[1] -= step/self.scale
+    def move_down(self, step=5):
+        self.position[1] -= step
+        self.graph.draw()
 
 
-    def move_right(self, step=1):
-        self.position[1] -= step/self.scale
+    def move_right(self, step=5):
+        self.position[0] -= step
+        self.graph.draw()
 
-    def move_left(self, step=1):
-        self.position[1] += step/self.scale
+    def move_left(self, step=5):
+        self.position[0] += step
+        self.graph.draw()
 
 
     def transform_point(self, x0, y0, z0):
@@ -100,7 +104,11 @@ class Canvas(tk.Canvas):
         point = np.matmul(rotation_z, point)
         point[2][0] -= (self.__zoom_fixed + self.zoom.get())
 
-        return [point[0][0]+self.position[0], point[1][0]+self.position[1], point[2][0]]
+        point[0][0] += self.position[0]/self.scale/self.clipping_z*point[2][0]
+        point[1][0] += self.position[1]/self.scale/self.clipping_z*point[2][0]
+
+
+        return [point[0][0], point[1][0], point[2][0]]
 
     def project_point(self, x0, y0, z0):
         #_x, _y, _z = self.transform_point(x0, y0, z0)
