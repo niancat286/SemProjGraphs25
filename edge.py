@@ -152,10 +152,13 @@ class Label_name:
         x1, y1 = self.canvas.project_point(x1, y1, z1)
 
         # Обчислюємо позицію тексту трохи ближче до __v2
-        tx = x0 + (x1 - x0) * 2 / 3
-        ty = y0 + (y1 - y0) * 2 / 3
+        try:
+            tx = x0 + (x1 - x0) * 2 / 3
+            ty = y0 + (y1 - y0) * 2 / 3
 
-        # Малюємо текст (якщо не пустий ID)
-        if self.ids:
-            label_text = ','.join(str(i) for i in self.ids)
-            self.label_id = self.canvas.create_text(tx, ty, text=f'[{label_text}]', fill="red", font=("Arial", 10))
+            # Малюємо текст (якщо не пустий ID)
+            if self.ids:
+                label_text = ','.join(str(i) for i in self.ids)
+                self.label_id = self.canvas.create_text(tx, ty, text=f'[{label_text}]', fill="red", font=("Arial", 10))
+        except TypeError:
+            pass
