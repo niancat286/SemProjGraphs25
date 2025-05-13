@@ -2,6 +2,7 @@ from geometry import generate_points
 from vertex import Vertex
 from edge import Edge
 from collections import defaultdict
+from edge import Label_name
 
 class Graph:
     def __init__(self, canvas, filename = None):
@@ -79,7 +80,8 @@ class Graph:
                 self.vertices[src].out_edges.append(self.edges[j])
                 self.vertices[dst].in_edges.append(self.edges[j])
 
-                self.labels.append(adj[src][dst])
+                label = Label_name(self.vertices[src], self.vertices[dst], canvas=self.canvas, edge_id=adj[src][dst])
+                self.labels.append(label)
         return
 
     def sort_elements(self, elements):
@@ -103,7 +105,13 @@ class Graph:
         #self.print_els(elements)
 
         for element in elements:
+            element.erase()
             element.draw()
+
+        for label in self.labels:
+            label.erase()
+            label.draw()
+
         self.elements = elements
 #        print(self.canvas.find_all())
 

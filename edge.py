@@ -130,29 +130,32 @@ class Edge:
 
 
 class Label_name:
-    def __init__(self, x0, y0, z0, x1, y1, z1, canvas, edge_id, color = 'blue', width=1, arrow = None):
-        self.P0 = [x0, y0, z0]
-        self.P1 = [x1, y1, z1]
-        self.compare_z = max(z0, z1)
-        self.color = color
-        self.width=width
+    def __init__(self, vertex1, vertex2, canvas, edge_id):
+        self.__v1 = vertex1
+        self.__v2 = vertex2
         self.canvas = canvas
-        self.canvas_id = None
         self.label_id = None
-        self.arrow = arrow
-        self.ids = [*edge_id]
+        self.ids = [*edge_id]  # список ID
 
     def erase(self):
-        if(self.canvas_id is not None):
-            self.canvas.delete(self.canvas_id)
-            if self.label_id is not None:
-                self.canvas.delete(self.label_id)
+        if self.label_id is not None:
+            self.canvas.delete(self.label_id)
+            self.label_id = None
 
     def draw(self):
-        x0, y0 = self.canvas.project_point(*self.P0)
-        x1, y1 = self.canvas.project_point(*self.P1)
-        tx = x0 + (x1 - x0) * (2 / 3)
-        ty = y0 + (y1 - y0) * (2 / 3)
-        self.label_id = self.ids
+        # Отримуємо координати з урахуванням трансформації
+        x0, y0, z0 = self.__v1.transformed
+        x1, y1, z1 = self.__v2.transformed
 
-        self.canvas.create_text(tx, ty, text=f'{self.label_id}', fill="black", font=("Arial", 10))
+        # Проєктуємо в 2D
+        x0, y0 = self.canvas.project_point(x0, y0, z0)
+        x1, y1 = self.canvas.project_point(x1, y1, z1)
+
+        # Обчислюємо позицію тексту трохи ближче до __v2
+        tx = x0 + (x1 - x0) * 2 / 3
+        ty = y0 + (y1 - y0) * 2 / 3
+
+        # Малюємо текст (якщо не пустий ID)
+        if self.ids:
+            label_text = ','.join(str(i) for i in self.ids)
+            self.label_id = self.canvas.create_text(tx, ty, text=f'[{label_text}]', fill="red", font=("Arial", 10))
