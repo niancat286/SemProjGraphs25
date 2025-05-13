@@ -31,8 +31,10 @@ class Canvas(tk.Canvas):
 
 
     def draw_line(self, x0, y0, x1, y1, width=1, color='blue'):
-    
-        return self.create_line(x0,y0, x1,y1, width=width, fill=color, arrow=tk.LAST)
+        #cx = x1 + (x1 + x0) / 2
+        #cy = y1 - (y1 - y0)/2
+        return self.create_line(x0,y0,x1,y1, width=width, fill=color, arrow=tk.LAST)
+        #return self.create_line(x0,y0, cx, cy, x1,y1, width=width, fill=color, arrow=tk.LAST, smooth=True)
 
 
     def draw_circle(self, x, y, r=10, color='paleturquoise2', text=None, text_color='black'):
