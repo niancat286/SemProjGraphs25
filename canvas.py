@@ -9,7 +9,7 @@ class Canvas(tk.Canvas):
         
         self.graph = graph
         self.zoom = tk.DoubleVar(value=0)
-        self.__zoom_fixed = 0        
+        self.__zoom_fixed = -100
         self.__x_rot_fixed = 0
         self.__y_rot_fixed = 0
         self.__z_rot_fixed = 0
@@ -19,10 +19,7 @@ class Canvas(tk.Canvas):
         self.z_rot_angle = tk.DoubleVar(value=0)
         self.scale = 50
         self.position = [0,0]
-
         self.clipping_z = 20
-        self.__implement_mouse_dragging()
-
         
         self.bind("<Configure>", self.setup_centered_coordinates)
         self.setup_centered_coordinates()
@@ -35,28 +32,75 @@ class Canvas(tk.Canvas):
     def setup_centered_coordinates(self, event=None):
         W = self.winfo_width()
         H = self.winfo_height()
+        self.W = W
+        self.H = H
         self.configure(scrollregion=(-W/2, -H/2, W/2, H/2))
-        self.xview_moveto(0.5)
-        self.yview_moveto(0.5)
-    
+   #     self.xview_moveto(0.5)
+    #    self.yview_moveto(0.5)
+        self.create_oval(-5,-5,5,5,fill='red')
 
+    def implement_controls(self):
+       self.selected_vertex = None
+       self.__implement_mouse_dragging()
+       self.__implement_mouse_scrolling()
+
+
+    def __implement_mouse_scrolling(self):
+        self.bind("<MouseWheel>", self.on_wheel)  # Windows
+        self.bind("<Button-4>", self.on_wheel)   # Linux (scroll up)
+        self.bind("<Button-5>", self.on_wheel)   # Linux (scroll down)
+    
+    
     def __implement_mouse_dragging(self):
         self.bind("<ButtonPress-1>", self.on_click)
         self.bind("<B1-Motion>",  self.on_motion)
-        print('mdr')
+        self.bind("<ButtonRelease-1>", self.on_release)
+#        print('mdr')
+
+    def on_release(self, e):
+        self.selected_vertex = None
 
     def on_click(self, e):
+#        print(e)
+        _x = e.x - self.W/2
+        _y = e.y - self.H/2
+ #       print(f"{_x=}, {_y=}")
+  #      print(f"{self.W=}, {self.H=}")
+        closest = self.find_overlapping(_x - 0.5, _y - 0.5, _x + 0.5, _y + 0.5)
+        self.selected_vertex = self.graph.vertex_by_id(closest)
         self.click_x = e.x
         self.click_y = e.y
 
     def on_motion(self, e):
         x, y = e.x, e.y
-        self.position[0] += (x-self.click_x)
-        self.position[1] -= (y-self.click_y)
+        if self.selected_vertex is None:
+            self.position[0] += (x-self.click_x)
+            self.position[1] -= (y-self.click_y)
+        else:
+            self.selected_vertex.move_for(x-self.click_x, -(y-self.click_y))
         self.click_x = x
         self.click_y = y
         self.graph.draw()
 
+
+    def on_wheel(self, e):
+        if e.num == 4:  # Linux scroll up
+            delta = 1.0
+        elif e.num == 5:  # Linux scroll down
+            delta = -1.0
+        else:  # Windows/Mac (<MouseWheel>)
+            delta = e.delta 
+    
+        step = -5
+        if self.selected_vertex is None:
+            self.__zoom_fixed += delta * step
+        else:
+            self.selected_vertex.zoom_for(delta, step)
+    
+ #       print(f"Zoom fixed: {self.__zoom_fixed}")
+        self.graph.draw()
+
+   
     def reset_rotation(self):
         self.x_rot_angle.set(0)
         self.y_rot_angle.set(0)

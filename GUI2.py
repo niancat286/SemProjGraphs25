@@ -296,6 +296,7 @@ class GUI(tk.Tk):
             tk.messagebox.showerror(title=None, message="Некоректні дані")
             return
         self.canvas.graph = self.graph
+        self.canvas.implement_controls()
         self.graph.draw()
         self.__create_controls()
         self.__implement_mouse_zooming()

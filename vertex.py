@@ -17,6 +17,7 @@ class Vertex:
 
         #vertex projection is an ellipse inside the rectangle 
         #with opposite vertices: P0(x0, y0) and P1(x1, y1)
+        self.position = [0,0,0]
         self.P0 = [0, 0]  
         self.P1 = [0, 0]
         self.c = [0,0]
@@ -51,6 +52,7 @@ class Vertex:
 #        print(self.P1)
         self.canvas_id = self.canvas.create_oval(*self.P0, *self.P1, fill = self.color, outline = self.color)
         self.label_id = self.canvas.create_text(self.c[0], self.c[1], text = self.number, fill = self.t_color, anchor = 'center')
+#        print(f"{self.canvas_id=}\t\t{self.label_id=}")
 
         #self.label_id = self.canvas.draw_circle(self.screen_x, self.screen_y, r = self.r - self.canvas.zoom.get()/40, text = str(self.number))
         #self.canvas.draw_circle(*self.canvas.project_point2(self.x, self.y, self.z), r = self.r - self.canvas.zoom.get()/40, text = str(self.number), color='pink')
@@ -58,12 +60,16 @@ class Vertex:
 
     def calc_projection(self):
         self.transformed  = self.canvas.transform_point(self.x, self.y, self.z)
+        scale = self.canvas.scale
+
+        self.transformed[2] += self.position[2]
+        self.transformed[0] += self.position[0]/scale/self.canvas.clipping_z * self.transformed[2]
+        self.transformed[1] += self.position[1]/scale/self.canvas.clipping_z * self.transformed[2]
         x0, y0, z0 = self.transformed
         self.compare_z = z0-self.r
 
         eps = 0.001
         r = self.r
-        scale = self.canvas.scale
         if z0 + r + eps < self.canvas.clipping_z:
             #vertex is fully outside projectable zone
             self.P0 = [None, None]
@@ -86,7 +92,6 @@ class Vertex:
                 self.c = [0,0]
                 self.P0 = [t*scale, t*scale]
                 self.P1 = [-t*scale, -t*scale]
-
                 return
             a = z1*r*((x0**2 + y0**2 + z0**2 - r**2)**(1/2)) / (z0**2 - r**2)
             b = z1*r / ((x0**2 + y0**2 + z0**2 - r**2)**(1/2))
@@ -104,8 +109,14 @@ class Vertex:
             self.P1[0] *= scale
             self.P1[1] *= scale
 
+    def move_for(self, x, y):
+        #maybe it is better to forget initial coordinates and just save the transformed ones(if this idea will be used this method has to be changed)
+        self.position[0] += x
+        self.position[1] += y
 
-
+    def zoom_for(self, delta, step):
+        #maybe it is better to forget initial coordinates and just save the transformed ones(if this idea will be used this method has to be changed)
+        self.position[2] += delta*step
 
     def update_position(self):
         self.screen_x, self.screen_y = self.project_point(self._x, self._y, self._z)

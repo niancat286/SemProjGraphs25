@@ -100,6 +100,7 @@ class Graph:
         for element in elements:
             element.draw()
         self.elements = elements
+#        print(self.canvas.find_all())
 
     def print_els(self, els):
         print('[')
@@ -120,6 +121,18 @@ class Graph:
     def give_vertex(self, v):
         return self.vertices[v]
 
+    def vertex_by_id(self,  ids):
+        #print(ids)#according to the documentation last one is the top one 
+        vertices = []
+
+        for vertex in self.vertices[1:]:
+            for i in range(len(ids)):
+                if vertex.canvas_id == ids[i] or vertex.label_id == ids[i]:
+                    vertices.append(vertex)
+        if len(vertices) == 0:
+            return None
+        else:
+            return vertices[-1]
 
 if __name__ == '__main__':
     filename = "matrix.txt"
