@@ -65,6 +65,8 @@ class Graph:
     def create_elements(self, adj):
         self.vertices = [-1,]
         self.edges = []
+        self.labels = []
+
         coords = generate_points(self.N)
         print(coords)
         for i in range(self.N):
@@ -76,6 +78,8 @@ class Graph:
                 j+=1
                 self.vertices[src].out_edges.append(self.edges[j])
                 self.vertices[dst].in_edges.append(self.edges[j])
+
+                self.labels.append(adj[src][dst])
         return
 
     def sort_elements(self, elements):
@@ -91,6 +95,7 @@ class Graph:
         for edge in self.edges:
             segments = edge.calc_segments()
             elements += segments
+
         #self.print_els(elements)
 
         elements = self.sort_elements(elements)

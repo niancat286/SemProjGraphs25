@@ -2,25 +2,32 @@ import math
 import tkinter as tk
 
 class LineSegment:
-    def __init__(self, x0, y0, z0, x1, y1, z1, canvas, color = 'blue', width=1, arrow = None):
+    def __init__(self, x0, y0, z0, x1, y1, z1, canvas, edge_id, color = 'blue', width=1, arrow = None):
         self.P0 = [x0, y0, z0]
         self.P1 = [x1, y1, z1]
         self.compare_z = max(z0, z1)
         self.color = color
         self.width=width
         self.canvas = canvas
-        self.canvas_id = None,
+        self.canvas_id = None
+        self.label_id = None
         self.arrow = arrow
+        self.ids = [*edge_id]
 
     def erase(self):
         if(self.canvas_id is not None):
             self.canvas.delete(self.canvas_id)
+        if self.label_id is not None:
+            self.canvas.delete(self.label_id)
+
+
     def draw(self):
         self.erase()
 
-        x0,y0 = self.canvas.project_point(*self.P0) 
-        x1,y1 = self.canvas.project_point(*self.P1)
-        self.canvas_id = self.canvas.create_line(x0, y0, x1, y1, fill=self.color, width=self.width, arrow = self.arrow)
+        x0, y0 = self.canvas.project_point(*self.P0)
+        x1, y1 = self.canvas.project_point(*self.P1)
+        self.canvas_id = self.canvas.create_line(x0, y0, x1, y1, fill=self.color, width=self.width, arrow=self.arrow)
+
 
 class Edge:
     def __init__(self, vertex1, vertex2, edge_id, canvas):
@@ -61,12 +68,8 @@ class Edge:
             z1_seg = z1 + t_end * (z2 - z1)
         
             # Create LineSegment object
-            segment = LineSegment(
-                                x0=x0, y0=y0, z0=z0,
-                                x1=x1_seg, y1=y1_seg, z1=z1_seg,
-                                canvas=canvas 
-                                )
-        
+            segment = LineSegment(x0=x0, y0=y0, z0=z0, x1=x1_seg, y1=y1_seg, z1=z1_seg, canvas=canvas, edge_id=self.ids)
+
             segments.append(segment)
 
         last = segments[-1]
@@ -108,7 +111,6 @@ class Edge:
                 _V2 = [B[0], B[1], B[2]]
         return _V1, _V2, arrow
 
-
     def draw(self):
         if self.canvas_id is not None:
             self.canvas.delete(self.canvas_id)
@@ -121,5 +123,36 @@ class Edge:
             raise Exception
         self.canvas_id = self.canvas.create_line(x0, y0, x1, y1, fill='blue', arrow = arrow)
 
+
+
     def add_paralel(self, edge_id):
         self.ids.append(edge_id)
+
+
+class Label_name:
+    def __init__(self, x0, y0, z0, x1, y1, z1, canvas, edge_id, color = 'blue', width=1, arrow = None):
+        self.P0 = [x0, y0, z0]
+        self.P1 = [x1, y1, z1]
+        self.compare_z = max(z0, z1)
+        self.color = color
+        self.width=width
+        self.canvas = canvas
+        self.canvas_id = None
+        self.label_id = None
+        self.arrow = arrow
+        self.ids = [*edge_id]
+
+    def erase(self):
+        if(self.canvas_id is not None):
+            self.canvas.delete(self.canvas_id)
+            if self.label_id is not None:
+                self.canvas.delete(self.label_id)
+
+    def draw(self):
+        x0, y0 = self.canvas.project_point(*self.P0)
+        x1, y1 = self.canvas.project_point(*self.P1)
+        tx = x0 + (x1 - x0) * (2 / 3)
+        ty = y0 + (y1 - y0) * (2 / 3)
+        self.label_id = self.ids
+
+        self.canvas.create_text(tx, ty, text=f'{self.label_id}', fill="black", font=("Arial", 10))
