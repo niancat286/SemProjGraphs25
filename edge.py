@@ -214,17 +214,53 @@ class Label_name:
         x1, y1, z1 = self.__v2.transformed
 
         # Проєктуємо в 2D
-        x0, y0 = self.canvas.project_point(x0, y0, z0)
-        x1, y1 = self.canvas.project_point(x1, y1, z1)
+        x0_2d, y0_2d = self.canvas.project_point(x0, y0, z0)
+        x1_2d, y1_2d = self.canvas.project_point(x1, y1, z1)
 
         # Обчислюємо позицію тексту трохи ближче до __v2
         try:
-            tx = x0 + (x1 - x0) * 2 / 3
-            ty = y0 + (y1 - y0) * 2 / 3
+            if self.__v1.number == self.__v2.number:
+                # Це петля
+                # радіус петлі (такий самий, як при малюванні)
+                r_loop = self.__v1.r * 1.9  # трохи більша дуга
 
-            # Малюємо текст (якщо не пустий ID)
+                # Зміщення центру дуги: праворуч від вершини
+                offset_x = x0 + r_loop
+                offset_y = y0
+                offset_z = z0
+
+                # Кутова амплітуда дуги
+                angle_start = math.radians(210)
+                angle_end = math.radians(0)
+                num_segments = 12
+
+                for i in range(num_segments):
+                    t1 = angle_start + (angle_end - angle_start) * i / num_segments
+                    t2 = angle_start + (angle_end - angle_start) * (i + 1) / num_segments
+
+                    # Точки дуги в XY площині (можна адаптувати до іншої)
+                    x1 = offset_x + r_loop * math.cos(t1)
+                    y1 = offset_y + r_loop * math.sin(t1)
+                    z1 = offset_z + 0.01  # трохи вище — щоб не зливалося
+
+                    x2 = offset_x + r_loop * math.cos(t2)
+                    y2 = offset_y + r_loop * math.sin(t2)
+                    z2 = offset_z + 0.01
+
+                tx, ty = self.canvas.project_point(x1, y1, z1)
+
+            else:
+                # Стандартне ребро
+                tx = x0_2d + (x1_2d - x0_2d) * 2 / 3
+                ty = y0_2d + (y1_2d - y0_2d) * 2 / 3
+
             if self.ids:
                 label_text = ','.join(str(i) for i in self.ids)
-                self.label_id = self.canvas.create_text(tx, ty, text=f'[{label_text}]', fill="red", font=("Arial", 10))
+                self.label_id = self.canvas.create_text(
+                    tx, ty,
+                    text=f'[{label_text}]',
+                    fill="red",
+                    font=("Arial", 10)
+                )
         except TypeError:
             pass
