@@ -24,9 +24,12 @@ class LineSegment:
     def draw(self):
         self.erase()
 
-        x0, y0 = self.canvas.project_point(*self.P0)
-        x1, y1 = self.canvas.project_point(*self.P1)
-        self.canvas_id = self.canvas.create_line(x0, y0, x1, y1, fill=self.color, width=self.width, arrow=self.arrow)
+        try:
+            x0, y0 = self.canvas.project_point(*self.P0)
+            x1, y1 = self.canvas.project_point(*self.P1)
+            self.canvas_id = self.canvas.create_line(x0, y0, x1, y1, fill=self.color, width=self.width, arrow=self.arrow)
+        except IndexError:
+            pass
 
 
 class Edge:
@@ -46,25 +49,34 @@ class Edge:
         canvas = self.canvas
 
         if self.__v1.number == self.__v2.number:
-            x0, y0, z0 = self.__v1.transformed  # Центр вершини
-            loop_radius = self.__v1.r * 2  # Радіус петлі (більший за вершину)
-            segments = []
+            x0, y0, z0 = self.__v1.transformed
+            r_vertex = self.__v1.r
+            r_loop = r_vertex * 1.8  # трохи більша дуга
+
+            # Зміщення центру дуги: праворуч від вершини
+            offset_x = x0 + r_loop
+            offset_y = y0
+            offset_z = z0
+
+            # Кутова амплітуда дуги
+            angle_start = math.radians(210)
+            angle_end = math.radians(-150)
             num_segments = 12
 
+            segments = []
             for i in range(num_segments):
-                angle1 = 2 * math.pi * i / num_segments
-                angle2 = 2 * math.pi * (i + 1) / num_segments
+                t1 = angle_start + (angle_end - angle_start) * i / num_segments
+                t2 = angle_start + (angle_end - angle_start) * (i + 1) / num_segments
 
-                # Малюємо петлю в площині XY (можна адаптувати)
-                x1 = x0 + loop_radius * math.cos(angle1)
-                y1 = y0 + loop_radius * math.sin(angle1)
-                z1 = z0 + 0.01  # трохи вище, щоб не зливалося
+                # Точки дуги в XY площині (можна адаптувати до іншої)
+                x1 = offset_x + r_loop * math.cos(t1)
+                y1 = offset_y + r_loop * math.sin(t1)
+                z1 = offset_z + 0.01  # трохи вище — щоб не зливалося
 
-                x2 = x0 + loop_radius * math.cos(angle2)
-                y2 = y0 + loop_radius * math.sin(angle2)
-                z2 = z0 + 0.01
+                x2 = offset_x + r_loop * math.cos(t2)
+                y2 = offset_y + r_loop * math.sin(t2)
+                z2 = offset_z + 0.01
 
-                # Малюємо сегмент
                 segment = LineSegment(
                     x0=x1, y0=y1, z0=z1,
                     x1=x2, y1=y2, z1=z2,
@@ -74,7 +86,7 @@ class Edge:
                 segments.append(segment)
 
             if segments:
-                segments[-1].arrow = 'last'  # Додати стрілку
+                segments[-1].arrow = 'last'
 
             return segments
 
