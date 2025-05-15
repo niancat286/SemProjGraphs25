@@ -26,6 +26,9 @@ class Vertex:
         self.canvas_id = None  # id овала вершини на Canvas
         self.label_id = None
 
+    def __eq__(self, other):
+        return isinstance(other, Vertex) and self.number == other.number
+
     def move_to(self, x0, y0, z0):
         self.x, self.y, self.z = x0, y0, z0
 #        self.draw()
@@ -125,4 +128,4 @@ class Vertex:
    
 
     def __str__(self):
-        print(f'Vertex {self._number}, cords: {self._x, self._y, self._z}')
+        print(f'Vertex {self.number}, cords: {self.x, self.y, self.z}')

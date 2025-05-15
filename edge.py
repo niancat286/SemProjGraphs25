@@ -44,6 +44,40 @@ class Edge:
         if V1 is None:
             return []
         canvas = self.canvas
+
+        if self.__v1.number == self.__v2.number:
+            x0, y0, z0 = self.__v1.transformed  # Центр вершини
+            loop_radius = self.__v1.r * 2  # Радіус петлі (більший за вершину)
+            segments = []
+            num_segments = 12
+
+            for i in range(num_segments):
+                angle1 = 2 * math.pi * i / num_segments
+                angle2 = 2 * math.pi * (i + 1) / num_segments
+
+                # Малюємо петлю в площині XY (можна адаптувати)
+                x1 = x0 + loop_radius * math.cos(angle1)
+                y1 = y0 + loop_radius * math.sin(angle1)
+                z1 = z0 + 0.01  # трохи вище, щоб не зливалося
+
+                x2 = x0 + loop_radius * math.cos(angle2)
+                y2 = y0 + loop_radius * math.sin(angle2)
+                z2 = z0 + 0.01
+
+                # Малюємо сегмент
+                segment = LineSegment(
+                    x0=x1, y0=y1, z0=z1,
+                    x1=x2, y1=y2, z1=z2,
+                    canvas=self.canvas,
+                    edge_id=self.ids
+                )
+                segments.append(segment)
+
+            if segments:
+                segments[-1].arrow = 'last'  # Додати стрілку
+
+            return segments
+
         x1, y1, z1 = V1
         x2, y2, z2 = V2
         L = ((x1 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2) ** 0.5
@@ -78,37 +112,57 @@ class Edge:
         return segments
 
     def calc_begin_end(self):
+        # Отримуємо координати вершин
         x0, y0, z0 = self.__v1.transformed
-        x1, y1, z1 = self.__v2.transformed 
+        x1, y1, z1 = self.__v2.transformed
 
         r = self.__v1.r
-        u = [x1-x0, y1-y0, z1-z0]
-        dist = (u[0]**2 + u[1]**2 + u[2]**2 ) ** (1/2)
-        if(dist < r * 2):
+
+        # Перевірка на петлю (ребро з вершини в саму себе)
+        if self.__v1 == self.__v2:
+            # Повертаємо одні й ті самі координати — обробка буде в calc_segments
+            return [x0, y0, z0], [x1, y1, z1], None
+
+        # Вектор між вершинами
+        u = [x1 - x0, y1 - y0, z1 - z0]
+        dist = (u[0] ** 2 + u[1] ** 2 + u[2] ** 2) ** 0.5
+
+        # Якщо вершини занадто близько — не малюємо ребро
+        if dist < r * 2:
             drawn = 1
             self.canvas_id = None
-            self.label_id  = None
+            self.label_id = None
             return None, None, None
-        u = [u[0]/dist, u[1]/dist, u[2]/dist]
+
+        # Нормалізуємо напрям
+        u = [u[0] / dist, u[1] / dist, u[2] / dist]
         eps = 0.0001
-        A = [x0+(r * u[0])-eps, y0+(r*u[1])-eps, z0+(r*u[2])-eps]
-        B = [x1-(r * u[0]), y1-(r*u[1]), z1-(r*u[2])]
-        if(A[2] < self.canvas.clipping_z and B[2] < self.canvas.clipping_z):
+
+        # Зсуваємо на радіус, щоб не малювати до центру вершини
+        A = [x0 + (r * u[0]) - eps, y0 + (r * u[1]) - eps, z0 + (r * u[2]) - eps]
+        B = [x1 - (r * u[0]), y1 - (r * u[1]), z1 - (r * u[2])]
+
+        # Кліпінг за z
+        if A[2] < self.canvas.clipping_z and B[2] < self.canvas.clipping_z:
             return None, None, None
+
         arrow = 'last'
         _V1 = A
         _V2 = B
-        if(B[2] < self.canvas.clipping_z or A[2] < self.canvas.clipping_z):
-            t = (self.canvas.clipping_z - A[2])/(B[2]-A[2])
-            x = A[0] + t*(B[0]-A[0])
-            y = A[1] + t*(B[0]-A[0])
-            if(B[2] < self.canvas.clipping_z):
-                _V1 = [A[0], A[1], A[2]]
-                _V2 = [x,y,20]
+
+        # Частковий кліпінг
+        if B[2] < self.canvas.clipping_z or A[2] < self.canvas.clipping_z:
+            t = (self.canvas.clipping_z - A[2]) / (B[2] - A[2])
+            x = A[0] + t * (B[0] - A[0])
+            y = A[1] + t * (B[1] - A[1])
+            if B[2] < self.canvas.clipping_z:
+                _V1 = A
+                _V2 = [x, y, self.canvas.clipping_z + 0.01]
                 arrow = None
             else:
-                _V1 = [x,y,20]
-                _V2 = [B[0], B[1], B[2]]
+                _V1 = [x, y, self.canvas.clipping_z + 0.01]
+                _V2 = B
+
         return _V1, _V2, arrow
 
     def draw(self):
