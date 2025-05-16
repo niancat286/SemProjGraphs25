@@ -250,22 +250,35 @@ class RotationInterface(ttk.Frame):
 
 
 class DragInterface(ttk.Frame):
-    def __init__(self, root, canvas):
+    def __init__(self, root, canvas, graph):
         super().__init__(root)
+        self.graph = graph
         self.pack(pady=5, fill='x', padx=5)
         self.canvas = canvas
         self.__create_drag_buttons()
 
     def __create_drag_buttons(self):
-        ttk.Button(self, text="⬆", command=self.canvas.move_up).grid(row=0, column=1, pady=5)
-        ttk.Button(self, text="⬅", command=self.canvas.move_left).grid(row=1, column=0, pady=5)
-        ttk.Button(self, text="⮕", command=self.canvas.move_right).grid(row=1, column=2, pady=5)
-        ttk.Button(self, text="⬇", command=self.canvas.move_down).grid(row=2, column=1, pady=5)
-        
+        ttk.Button(self, text="⬆", command=self.move_up).grid(row=0, column=1, pady=5)
+        ttk.Button(self, text="⬅", command=self.move_left).grid(row=1, column=0, pady=5)
+        ttk.Button(self, text="⮕", command=self.move_right).grid(row=1, column=2, pady=5)
+        ttk.Button(self, text="⬇", command=self.move_down).grid(row=2, column=1, pady=5)
+
         self.columnconfigure(0, weight=1)
         self.columnconfigure(2, weight=1)
         self.rowconfigure(0, weight=1)
         self.rowconfigure(2, weight=1)
+
+    def move_up(self, step=5):
+        self.graph.move_for(0, step)
+
+    def move_down(self, step=5):
+        self.graph.move_for(0, -step)
+
+    def move_right(self, step=5):
+        self.graph.move_for(step, 0)
+
+    def move_left(self, step=5):
+        self.graph.move_for(-step, 0)
 
 
 class Controls(ttk.Frame):
