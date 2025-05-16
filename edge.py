@@ -264,3 +264,5 @@ class Label_name:
                 )
         except TypeError:
             pass
+        except IndexError:
+            pass
