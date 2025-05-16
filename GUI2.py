@@ -285,57 +285,48 @@ class Controls(ttk.Frame):
     def __init__(self, root, canvas, graph, relx=0.81, rely=0.01, relwidth=0.19, relheight=0.98, anchor="nw"):
         super().__init__(root)
         self.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight, anchor=anchor)
-
         self.canvas = canvas
         self.graph = graph
-        self.vertex_mover = None
         self.__create_widgets()
 
     def __create_widgets(self):
         self.__create_vertex_mover_button()
-        self.__create_zoom_slider(self.canvas.zoom)
+        self.__create_zoom_slider()
         self.__create_rotation_interface()
         self.__create_drag_interface()
-
-    def __create_vertex_mover_button(self):
-        ttk.Button(self, text='Move vertex', command=self.create_vertex_mover, state='normal').pack(side='top', pady=2)
-
-        #self._vertex_mover_button.place(relx=0.01, rely=0.09, relwidth=0.15, relheight=0.06, anchor='ne')
-
-    def create_vertex_mover(self):
-        if self.vertex_mover is None:
-            self.vertex_mover = VertexMover(self, self.graph)
-            self.vertex_mover.bind("<Destroy>", self.on_vertex_mover_destroy)
-        else:
-            self.vertex_mover.lift()
-
-    def on_vertex_mover_destroy(self, event):
         self.vertex_mover = None
 
-       
-    def __create_zoom_slider(self, variable):
+    def __create_zoom_slider(self):
         frame = ttk.Frame(self)
         frame.pack(padx=3, pady=3, fill='x')
-        ttk.Label(frame, text="Zoom").pack(side='top',pady=(5,3))
-        ttk.Scale(frame, variable=variable, from_=-2000.0, to=2000, orient="horizontal", command=self.graph.draw).pack(pady=3, padx=5, fill='x')
+        ttk.Label(frame, text="Zoom").pack(side='top', pady=(5, 3))
+        self.zoom = tk.DoubleVar(value=0)
+        self.prev_zoom = 0
+        ttk.Scale(
+            frame,
+            variable=self.zoom,
+            from_=1000.0,
+            to=-1000,
+            orient="horizontal",
+            command=self.on_zoom
+        ).pack(pady=3, padx=5, fill='x')
         btn_frame = ttk.Frame(frame)
-        btn_frame.pack(pady = 3, fill='x')
-        ttk.Button(btn_frame, text='Fix', command=self.fix_zoom).pack(side='left')
-        ttk.Button(btn_frame, text='Reset', command=self.reset_zoom).pack(side='right')
+        btn_frame.pack(pady=3, fill='x')
+        ttk.Button(btn_frame, text='Center slider', command=self.center_zoom).pack(side='top')
 
-    def fix_zoom(self, *args):
-        self.canvas.fix_zoom()
-        self.graph.draw()
+    def center_zoom(self):
+        self.zoom.set(0)
+        self.prev_zoom = 0
 
-    def reset_zoom(self, *args):
-        self.canvas.reset_zoom()
-        self.graph.draw()
+    def on_zoom(self, e):
+        self.graph.zoom_for(self.zoom.get() - self.prev_zoom)
+        self.prev_zoom = self.zoom.get()
 
     def __create_rotation_interface(self):
         self.__rotation_interface = RotationInterface(self, self.canvas, self.graph)
 
     def __create_drag_interface(self):
-        self.__drag_interface = DragInterface(self, self.canvas)
+        self.__drag_interface = DragInterface(self, self.canvas, self.graph)
 
 
 class GUI(tk.Tk):
