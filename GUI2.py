@@ -3,6 +3,7 @@ from tkinter import ttk, filedialog, messagebox
 from graph import Graph
 from canvas import Canvas
 import sv_ttk
+import math
 
 PI = 3.1415926535
 
@@ -84,7 +85,7 @@ class VertexMover(tk.Toplevel):
             float(c)
             return True
         except ValueError:
-            return c == ""
+            return c == "" or c == '-'
 
     def on_focus_in(self, *args):
         if not self.__entry_value.get().isdigit():
@@ -123,26 +124,104 @@ class RotationInterface(ttk.Frame):
         self.pack(pady=5, fill='x', padx=5)
         self.canvas = canvas
         self.graph = graph
+        self.old_x = 0
+        self.old_y = 0
+        self.old_z = 0
+        self.x_angle = tk.DoubleVar(value=0)
+        self.y_angle = tk.DoubleVar(value=0)
+        self.z_angle = tk.DoubleVar(value=0)
         self.__create_widgets()
 
     def __create_widgets(self):
         ttk.Label(self, text="Rotation").pack()
+        ttk.Button(self, text="Recalculate Centroid", command=self.recalc_centroid).pack(pady=5)
+        self.__create_type_chooser()
         self.__create_sliders()
         self.__create_buttons()
 
+    def recalc_centroid(self, *args):
+        if not self.switch_var.get():
+            self.fix_rotation()
+        self.graph.calc_centroid()
+
+    def __create_type_chooser(self):
+        frame = ttk.Frame(self)
+        frame.pack(pady=2, fill='x')
+        ttk.Label(frame, text="Centroid").grid(row=0, column=0, sticky='w', padx=2)
+
+        # Switch in the middle
+        self.switch_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(frame, variable=self.switch_var, command=self.switch).grid(row=0, column=1, padx=2)
+        # https://github.com/rdbende/Sun-Valley-ttk-theme need toggle
+
+        # Spinbox on the right
+        ttk.Label(frame, text="Vertex:").grid(row=0, column=2, sticky='e', padx=2)
+        self.spinbox_var = tk.StringVar(value="1")
+        vspn = (self.register(self.on_validate_vertex), "%P")
+        spinbox = ttk.Spinbox(
+            frame,
+            from_=1,
+            to=self.graph.N,
+            textvariable=self.spinbox_var,
+            validate="key",
+            validatecommand=vspn
+        )
+        spinbox.grid(row=0, column=3, sticky='e', padx=2)
+        spinbox.bind("<Return>", lambda event: self.update_spinbox())
+        spinbox.bind("<FocusOut>", lambda event: self.update_spinbox())
+
+        # Configure column weights
+        frame.columnconfigure(3, weight=1)
+
+    def switch(self):
+        self.fix_rotation()
+
+    def update_spinbox(self):
+        try:
+            value = int(self.spinbox_var.get())
+            if 1 <= value <= self.graph.N:
+                self.vertex = (value)
+        except ValueError:
+            self.spinbox_var.set("1")
+
+    def on_validate_vertex(self, value):
+        if value == "":
+            return True
+        try:
+            v = int(value)
+            return 1 <= v <= self.graph.N
+        except ValueError:
+            return False
+
     def __create_sliders(self):
         #ttk.Frame()
-        self.__create_slider('X:', self.canvas.x_rot_angle)
-        self.__create_slider('Y:', self.canvas.y_rot_angle)
-        self.__create_slider('Z:', self.canvas.z_rot_angle)
+        self.__create_slider('X:', self.x_angle)
+        self.__create_slider('Y:', self.y_angle)
+        self.__create_slider('Z:', self.z_angle)
 
     def __create_slider(self,text, variable):
         slider_frame = ttk.Frame(self)
         slider_frame.pack(pady=2,fill='x')
         ttk.Label(slider_frame, text=text).grid(row=0, column=0, sticky='w',padx=2)
-        ttk.Scale(slider_frame, variable=variable, from_=-PI, to=PI, command=self.graph.draw).grid(row=0, column=1, sticky='ew', padx=2)
+        ttk.Scale(slider_frame, variable=variable, from_=-PI, to=PI, command=self.rotate).grid(row=0, column=1, ticky='ew', padx=2)
         slider_frame.columnconfigure(1, weight=1)
         return
+
+    def rotate(self, *args):
+        x, y, z = self.x_angle.get(), self.y_angle.get(), self.z_angle.get()
+        if not (x == y == z == 0):
+            if self.switch_var.get():
+                self.graph.rotate_around_vertex(int(self.spinbox_var.get()), self.old_x, self.old_y, self.old_z,
+                                                revert=1)
+            else:
+                self.graph.rotate_around_centroid(self.old_x, self.old_y, self.old_z, revert=1)
+        if self.switch_var.get():
+            self.graph.rotate_around_vertex(int(self.spinbox_var.get()), x, y, z)
+        else:
+            self.graph.rotate_around_centroid(x, y, z)
+        self.old_x = x
+        self.old_y = y
+        self.old_z = z
 
     def __create_buttons(self):
         btn_frame = ttk.Frame(self)
@@ -151,14 +230,23 @@ class RotationInterface(ttk.Frame):
         ttk.Button(btn_frame, text="Reset", command=self.reset_rotation).pack(side='right',expand=True)
         ttk.Button(btn_frame, text="Fix", command=self.fix_rotation).pack(side='right',expand=True)
 
-    def reset_rotation(self, *args):
-        self.canvas.reset_rotation()
-        self.graph.draw()
-
     def fix_rotation(self, *args):
-        self.canvas.fix_rotation()
-        self.graph.draw()
+        self.set_to(0)
 
+    def reset_rotation(self, *args):
+        if self.switch_var.get():
+            self.graph.rotate_around_vertex(int(self.spinbox_var.get()), self.old_x, self.old_y, self.old_z, revert=1)
+        else:
+            self.graph.rotate_around_centroid(self.old_x, self.old_y, self.old_z, revert=1)
+        self.set_to(0)
+
+    def set_to(self, val):
+        self.x_angle.set(val)
+        self.y_angle.set(val)
+        self.z_angle.set(val)
+        self.old_x = val
+        self.old_y = val
+        self.old_z = val
 
 
 class DragInterface(ttk.Frame):
