@@ -235,19 +235,15 @@ class Label_name:
                 num_segments = 12
 
                 for i in range(num_segments):
-                    t1 = angle_start + (angle_end - angle_start) * i / num_segments
                     t2 = angle_start + (angle_end - angle_start) * (i + 1) / num_segments
 
                     # Точки дуги в XY площині (можна адаптувати до іншої)
-                    x1 = offset_x + r_loop * math.cos(t1)
-                    y1 = offset_y + r_loop * math.sin(t1)
-                    z1 = offset_z + 0.01  # трохи вище — щоб не зливалося
 
                     x2 = offset_x + r_loop * math.cos(t2)
                     y2 = offset_y + r_loop * math.sin(t2)
                     z2 = offset_z + 0.01
 
-                tx, ty = self.canvas.project_point(x1, y1, z1)
+                tx, ty = self.canvas.project_point(x2, y2, z2)
 
             else:
                 # Стандартне ребро
