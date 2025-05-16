@@ -285,8 +285,10 @@ class Controls(ttk.Frame):
     def __init__(self, root, canvas, graph, relx=0.81, rely=0.01, relwidth=0.19, relheight=0.98, anchor="nw"):
         super().__init__(root)
         self.place(relx=relx, rely=rely, relwidth=relwidth, relheight=relheight, anchor=anchor)
+
         self.canvas = canvas
         self.graph = graph
+        self.vertex_mover = None
         self.__create_widgets()
 
     def __create_widgets(self):
@@ -294,7 +296,22 @@ class Controls(ttk.Frame):
         self.__create_zoom_slider()
         self.__create_rotation_interface()
         self.__create_drag_interface()
+
+    def __create_vertex_mover_button(self):
+        ttk.button(self, text='move vertex', command=self.create_vertex_mover, state='normal').pack(side='top', pady=2)
+
+        #self._vertex_mover_button.place(relx=0.01, rely=0.09, relwidth=0.15, relheight=0.06, anchor='ne')
+
+    def create_vertex_mover(self):
+        if self.vertex_mover is None:
+            self.vertex_mover = VertexMover(self, self.graph)
+            self.vertex_mover.bind("<destroy>", self.on_vertex_mover_destroy)
+        else:
+            self.vertex_mover.lift()
+
+    def on_vertex_mover_destroy(self, event):
         self.vertex_mover = None
+
 
     def __create_zoom_slider(self):
         frame = ttk.Frame(self)
@@ -393,7 +410,6 @@ class GUI(tk.Tk):
         self.__create_controls()
         self.__implement_mouse_zooming()
         
-        self.canvas.redraw()
 
 
        # try:

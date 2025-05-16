@@ -8,17 +8,17 @@ class Canvas(tk.Canvas):
 #        self.place(x=0.01, y=0.01, width=1024, height=648)
         
         self.graph = graph
-        self.zoom = tk.DoubleVar(value=0)
-        self.__zoom_fixed = -100
-        self.__x_rot_fixed = 0
-        self.__y_rot_fixed = 0
-        self.__z_rot_fixed = 0
+        #  self.zoom = tk.DoubleVar(value=0)
+        # self.__zoom_fixed = -100
+        # self.__x_rot_fixed = 0
+        # self.__y_rot_fixed = 0
+        # self.__z_rot_fixed = 0
 
-        self.x_rot_angle = tk.DoubleVar(value=0)
-        self.y_rot_angle = tk.DoubleVar(value=0)
-        self.z_rot_angle = tk.DoubleVar(value=0)
+        # self.x_rot_angle = tk.DoubleVar(value=0)
+        # self.y_rot_angle = tk.DoubleVar(value=0)
+        # self.z_rot_angle = tk.DoubleVar(value=0)
         self.scale = 50
-        self.position = [0,0]
+        # self.position = [0,0]
         self.clipping_z = 20
         
         self.bind("<Configure>", self.setup_centered_coordinates)
@@ -73,14 +73,9 @@ class Canvas(tk.Canvas):
 
     def on_motion(self, e):
         x, y = e.x, e.y
-        if self.selected_vertex is None:
-            self.position[0] += (x-self.click_x)
-            self.position[1] -= (y-self.click_y)
-        else:
-            self.selected_vertex.move_for(x-self.click_x, -(y-self.click_y))
+        self.graph.move_for((x-self.click_x), -(y-self.click_y), self.selected_vertex)
         self.click_x = x
         self.click_y = y
-        self.graph.draw()
 
 
     def on_wheel(self, e):
@@ -92,67 +87,24 @@ class Canvas(tk.Canvas):
             delta = e.delta 
     
         step = -5
-        if self.selected_vertex is None:
-            self.__zoom_fixed += delta * step
-        else:
-            self.selected_vertex.zoom_for(delta, step)
+        z = delta * step
+        self.graph.zoom_for(z, vertex=self.selected_vertex)
     
  #       print(f"Zoom fixed: {self.__zoom_fixed}")
-        self.graph.draw()
 
-   
-    def reset_rotation(self):
-        self.x_rot_angle.set(0)
-        self.y_rot_angle.set(0)
-        self.z_rot_angle.set(0)
-
-    def fix_rotation(self):
-        self.__x_rot_fixed += self.x_rot_angle.get()
-        self.__y_rot_fixed += self.y_rot_angle.get()
-        self.__z_rot_fixed += self.z_rot_angle.get()
-        self.reset_rotation()
-
-    def fix_zoom(self):
-        self.__zoom_fixed += self.zoom.get()
-        self.reset_zoom()
-
-    def reset_zoom(self):
-        self.zoom.set(0)
-
-
-    def move_up(self, step=5):
-        self.position[1] += step
-        self.graph.draw()
-
-    def move_down(self, step=5):
-        self.position[1] -= step
-        self.graph.draw()
-
-
-    def move_right(self, step=5):
-        self.position[0] -= step
-        self.graph.draw()
-
-    def move_left(self, step=5):
-        self.position[0] += step
-        self.graph.draw()
-
-
-    def transform_point(self, x0, y0, z0):
-        point = [[x0], [y0], [z0]]
-    #    print(f"{point=} , {rotation_x=} {rotation_y=} {rotation_z=} {zoom=}")
-        rotation_x, rotation_y, rotation_z = self.calculate_matrices()
-
-        point = np.matmul(rotation_y, point)
-        point = np.matmul(rotation_x, point)
-        point = np.matmul(rotation_z, point)
-        point[2][0] -= (self.__zoom_fixed + self.zoom.get())
-
-        point[0][0] += self.position[0]/self.scale/self.clipping_z*point[2][0]
-        point[1][0] += self.position[1]/self.scale/self.clipping_z*point[2][0]
-
-
-        return [point[0][0], point[1][0], point[2][0]]
+    # def reset_rotation(self):
+        # self.x_rot_angle.set(0)
+        # self.y_rot_angle.set(0)
+        # self.z_rot_angle.set(0)
+        #
+    # def fix_rotation(self):
+        # self.__x_rot_fixed += self.x_rot_angle.get()
+        # self.__y_rot_fixed += self.y_rot_angle.get()
+        # self.__z_rot_fixed += self.z_rot_angle.get()
+        # self.reset_rotation()
+        #
+        # return [point[0][0], point[1][0], point[2][0]]
+        #
 
     def project_point(self, x0, y0, z0):
         #_x, _y, _z = self.transform_point(x0, y0, z0)
@@ -198,6 +150,3 @@ class Canvas(tk.Canvas):
 
 
 
-    def redraw(self, *args):
-        print(f"{self.zoom.get()=}\n{self.x_rot_angle.get()=}\n{self.y_rot_angle.get()=}\n{self.z_rot_angle.get()=}")
-        pass

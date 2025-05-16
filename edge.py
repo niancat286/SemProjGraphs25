@@ -125,10 +125,11 @@ class Edge:
 
     def calc_begin_end(self):
         # Отримуємо координати вершин
-        x0, y0, z0 = self.__v1.transformed
-        x1, y1, z1 = self.__v2.transformed
+        x0, y0, z0 = self.__v1.x, self.__v1.y, self.__v1.z
+        x1, y1, z1 = self.__v2.x, self.__v2.y, self.__v2.z
 
         r = self.__v1.r
+
 
         # Перевірка на петлю (ребро з вершини в саму себе)
         if self.__v1 == self.__v2:
@@ -210,8 +211,8 @@ class Label_name:
 
     def draw(self):
         # Отримуємо координати з урахуванням трансформації
-        x0, y0, z0 = self.__v1.transformed
-        x1, y1, z1 = self.__v2.transformed
+        x0, y0, z0 = self.__v1.x, self.__v1.y, self.__v2.z
+        x1, y1, z1 = self.__v2.x, self.__v2.y, self.__v2.z
 
         # Проєктуємо в 2D
         x0_2d, y0_2d = self.canvas.project_point(x0, y0, z0)

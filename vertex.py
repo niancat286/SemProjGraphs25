@@ -1,5 +1,6 @@
 import tkinter as tk
 import math
+import numpy as np
 
 class Vertex:
     def __init__(self, x0, y0, z0, number, canvas):
@@ -37,6 +38,10 @@ class Vertex:
             self.canvas.delete(self.canvas_id)
             self.canvas.delete(self.label_id)
 
+    def rotate(self, x, y, z, r_matrix):
+        P = [[self.x - x], [self.y - y], [self.z - z]]
+        P = np.matmul(r_matrix, P)
+        self.x, self.y, self.z = x + P[0][0], y + P[1][0], z + P[2][0]
     
     def draw(self, redraw=0):
 
@@ -62,17 +67,12 @@ class Vertex:
     
 
     def calc_projection(self):
-        self.transformed  = self.canvas.transform_point(self.x, self.y, self.z)
-        scale = self.canvas.scale
-
-        self.transformed[2] += self.position[2]
-        self.transformed[0] += self.position[0]/scale/self.canvas.clipping_z * self.transformed[2]
-        self.transformed[1] += self.position[1]/scale/self.canvas.clipping_z * self.transformed[2]
-        x0, y0, z0 = self.transformed
+        x0, y0, z0 = self.x, self.y, self.z
         self.compare_z = z0-self.r
 
         eps = 0.001
         r = self.r
+
         if z0 + r + eps < self.canvas.clipping_z:
             #vertex is fully outside projectable zone
             self.P0 = [None, None]
@@ -113,13 +113,17 @@ class Vertex:
             self.P1[1] *= scale
 
     def move_for(self, x, y):
-        #maybe it is better to forget initial coordinates and just save the transformed ones(if this idea will be used this method has to be changed)
-        self.position[0] += x
-        self.position[1] += y
+        # moving in space so that it would move for x,y on canvas without zooming
+        scale = self.canvas.scale
+        z1 = self.canvas.clipping_z
+        self.x += x / scale / z1 * self.z
+        self.y += y / scale / z1 * self.z
+        # need to synchronize with vertex mover
 
-    def zoom_for(self, delta, step):
-        #maybe it is better to forget initial coordinates and just save the transformed ones(if this idea will be used this method has to be changed)
-        self.position[2] += delta*step
+    def zoom_for(self, z):
+        self.z += z
+        # need to synchronize with vertex mover
+
 
     def update_position(self):
         self.screen_x, self.screen_y = self.project_point(self._x, self._y, self._z)
