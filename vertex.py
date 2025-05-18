@@ -69,6 +69,7 @@ class Vertex:
     def calc_projection(self):
         x0, y0, z0 = self.x, self.y, self.z
         self.compare_z = z0-self.r
+        scale = self.canvas.scale
 
         eps = 0.001
         r = self.r

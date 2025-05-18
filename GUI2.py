@@ -203,7 +203,7 @@ class RotationInterface(ttk.Frame):
         slider_frame = ttk.Frame(self)
         slider_frame.pack(pady=2,fill='x')
         ttk.Label(slider_frame, text=text).grid(row=0, column=0, sticky='w',padx=2)
-        ttk.Scale(slider_frame, variable=variable, from_=-PI, to=PI, command=self.rotate).grid(row=0, column=1, ticky='ew', padx=2)
+        ttk.Scale(slider_frame, variable=variable, from_=-PI, to=PI, command=self.rotate).grid(row=0, column=1, sticky='ew', padx=2)
         slider_frame.columnconfigure(1, weight=1)
         return
 
