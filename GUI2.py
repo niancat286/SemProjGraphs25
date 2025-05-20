@@ -298,7 +298,7 @@ class Controls(ttk.Frame):
         self.__create_drag_interface()
 
     def __create_vertex_mover_button(self):
-        ttk.button(self, text='move vertex', command=self.create_vertex_mover, state='normal').pack(side='top', pady=2)
+        ttk.Button(self, text='move vertex', command=self.create_vertex_mover, state='normal').pack(side='top', pady=2)
 
         #self._vertex_mover_button.place(relx=0.01, rely=0.09, relwidth=0.15, relheight=0.06, anchor='ne')
 
