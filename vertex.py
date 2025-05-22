@@ -119,18 +119,11 @@ class Vertex:
         z1 = self.canvas.clipping_z
         self.x += x / scale / z1 * self.z
         self.y += y / scale / z1 * self.z
-        # need to synchronize with vertex mover
+        # synchronized with vertex mover in graph.move
 
     def zoom_for(self, z):
         self.z += z
-        # need to synchronize with vertex mover
-
-
-    def update_position(self):
-        self.screen_x, self.screen_y = self.project_point(self._x, self._y, self._z)
-
-
-   
+        #synchronized with vertex mover in graph.zoom
 
     def __str__(self):
         print(f'Vertex {self.number}, cords: {self.x, self.y, self.z}')

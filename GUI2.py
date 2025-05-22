@@ -112,6 +112,12 @@ class VertexMover(tk.Toplevel):
         self.__z_spinbox.config(state=state)
         self.set_values(zero= (state=='disabled'))
 
+    def update_values(self):
+        if self.vertex is None:
+            self.set_values(zero=1)
+        else:
+            self.set_values()
+
     def set_values(self, zero=False):
         self.__x_var.set(0 if zero else self.vertex.x)
         self.__y_var.set(0 if zero else self.vertex.y)
@@ -151,11 +157,11 @@ class RotationInterface(ttk.Frame):
 
         # Switch in the middle
         self.switch_var = tk.BooleanVar(value=False)
-        ttk.Checkbutton(frame, variable=self.switch_var, command=self.switch).grid(row=0, column=1, padx=2)
+        ttk.Checkbutton(frame, style='Switch.TCheckbutton', variable=self.switch_var, command=self.switch).grid(row=0, column=1, padx=2)
         # https://github.com/rdbende/Sun-Valley-ttk-theme need toggle
 
         # Spinbox on the right
-        ttk.Label(frame, text="Vertex:").grid(row=0, column=2, sticky='e', padx=2)
+        ttk.Label(frame, text="V:").grid(row=0, column=2, sticky='e', padx=2)
         self.spinbox_var = tk.StringVar(value="1")
         vspn = (self.register(self.on_validate_vertex), "%P")
         spinbox = ttk.Spinbox(
@@ -291,14 +297,23 @@ class Controls(ttk.Frame):
         self.vertex_mover = None
         self.__create_widgets()
 
+    def update_vm(self):
+        if self.vertex_mover is None:
+            return
+        else:
+            self.vertex_mover.update_values()
+
     def __create_widgets(self):
         self.__create_vertex_mover_button()
+        ttk.Separator(self, orient=tk.HORIZONTAL).pack(side='top', fill='x')
         self.__create_zoom_slider()
+        ttk.Separator(self, orient=tk.HORIZONTAL).pack(side='top', fill='x')
         self.__create_rotation_interface()
+        ttk.Separator(self, orient=tk.HORIZONTAL).pack(side='top', fill='x')
         self.__create_drag_interface()
 
     def __create_vertex_mover_button(self):
-        ttk.Button(self, text='move vertex', command=self.create_vertex_mover, state='normal').pack(side='top', pady=2)
+        ttk.Button(self, text='Move vertex', command=self.create_vertex_mover, state='normal').pack(side='top', pady=2)
 
         #self._vertex_mover_button.place(relx=0.01, rely=0.09, relwidth=0.15, relheight=0.06, anchor='ne')
 
@@ -379,7 +394,7 @@ class GUI(tk.Tk):
         self.__create_import_button()
         
     def __create_controls(self):
-        self.__controls = Controls(self, rely=0.06,relheight=0.92, canvas=self.canvas, graph=self.graph)
+        self.controls = Controls(self, rely=0.06,relheight=0.92, canvas=self.canvas, graph=self.graph)
 
     def __create_canvas(self):
         self.canvas = Canvas(self)
@@ -408,6 +423,7 @@ class GUI(tk.Tk):
         self.canvas.implement_controls()
         self.graph.draw()
         self.__create_controls()
+        self.graph.controls = self.controls
         self.__implement_mouse_zooming()
         
 

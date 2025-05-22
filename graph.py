@@ -202,12 +202,14 @@ class Graph:
         vertices = self.vertices if vertex is None else [vertex]
         for vertex in vertices:
             vertex.move_for(x, y)
+        self.controls.update_vm()
         self.draw()
 
     def zoom_for(self, z, vertex=None):
         vertices = self.vertices if vertex is None else [vertex]
         for vertex in vertices:
             vertex.zoom_for(z)
+        self.controls.update_vm()
         self.draw()
 
 if __name__ == '__main__':
