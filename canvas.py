@@ -37,12 +37,13 @@ class Canvas(tk.Canvas):
         self.configure(scrollregion=(-W/2, -H/2, W/2, H/2))
    #     self.xview_moveto(0.5)
     #    self.yview_moveto(0.5)
-        self.create_oval(-5,-5,5,5,fill='red')
+#        self.create_oval(-5,-5,5,5,fill='red')
 
     def implement_controls(self):
        self.selected_vertex = None
        self.__implement_mouse_dragging()
        self.__implement_mouse_scrolling()
+       self.__implement_arcball_rotation()
 
 
     def __implement_mouse_scrolling(self):
@@ -105,6 +106,57 @@ class Canvas(tk.Canvas):
         #
         # return [point[0][0], point[1][0], point[2][0]]
         #
+    def __implement_arcball_rotation(self):
+        self.bind("<Control-ButtonPress-1>", self.start_arcball)
+        self.bind("<Control-B1-Motion>", self.drag_arcball)
+        self.bind("<Control-ButtonRelease-1>", self.end_arcball)
+
+    def start_arcball(self, event):
+        self.ball_x = event.x
+        self.ball_y = event.y
+
+    def drag_arcball(self, event):
+        if self.ball_x is None:
+            return
+
+        x = event.x
+        y = event.y
+        dx = x - self.ball_x
+        dy = y - self.ball_y
+        self.ball_x = x
+        self.ball_y = y
+
+        rotation_matrix = self.calculate_rotation(dx, dy)
+        self.graph.rotate_around_centroid(None,None,None,matrix=rotation_matrix)
+
+    def end_arcball(self, event):
+        self.ball_x = None
+        self.ball_y = None
+
+    def calculate_rotation(self, dx, dy):
+        dy = -dy
+        angle = np.sqrt(dx**2 + dy**2) * 0.005  # Angle in radians
+        if angle == 0:
+            return np.eye(3)  # No rotation
+
+        # Rotation axis (perpendicular to drag direction)
+        axis = np.array([dy, -dx, 0])  # y-axis for dx, x-axis for dy, z=0 (screen plane)
+        norm = np.linalg.norm(axis)
+        if norm == 0:
+            return np.eye(3)
+        axis = axis / norm
+
+        # Rodrigues' rotation formula
+        c = np.cos(angle)
+        s = np.sin(angle)
+        t = 1 - c
+        x, y, z = axis
+        rotation_matrix = np.array([
+            [t*x*x + c,    t*x*y - z*s, t*x*z + y*s],
+            [t*x*y + z*s,  t*y*y + c,   t*y*z - x*s],
+            [t*x*z - y*s,  t*y*z + x*s, t*z*z + c]
+        ])
+        return rotation_matrix
 
     def project_point(self, x0, y0, z0):
         #_x, _y, _z = self.transform_point(x0, y0, z0)

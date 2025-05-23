@@ -130,8 +130,11 @@ class Graph:
             vertex.rotate(V.x, V.y, V.z, m)
         self.draw()
 
-    def rotate_around_centroid(self, x_angle, y_angle, z_angle, revert=0):
-        m = self.calculate_matrix(x_angle, y_angle, z_angle)
+    def rotate_around_centroid(self, x_angle, y_angle, z_angle, revert=0, matrix=None):
+        if matrix is None:
+            m = self.calculate_matrix(x_angle, y_angle, z_angle)
+        else:
+            m = matrix
         if revert:
             m = np.transpose(m)
         for vertex in self.vertices:
