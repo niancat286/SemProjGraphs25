@@ -216,7 +216,7 @@ class Label_name:
 
     def draw(self):
         # Отримуємо координати з урахуванням трансформації
-        x0, y0, z0 = self.__v1.x, self.__v1.y, self.__v2.z
+        x0, y0, z0 = self.__v1.x, self.__v1.y, self.__v1.z
         x1, y1, z1 = self.__v2.x, self.__v2.y, self.__v2.z
 
         # Обчислюємо позицію тексту трохи ближче до __v2
@@ -253,12 +253,10 @@ class Label_name:
                 x0_2d, y0_2d = self.canvas.project_point(x0, y0, z0)
                 x1_2d, y1_2d = self.canvas.project_point(x1, y1, z1)
 
-                dx = x1_2d - x0_2d
-                dy = y1_2d - y0_2d
+                mx = (3 * x0_2d + 2 * x1_2d) / 5
+                my = (3 * y0_2d + 2 * y1_2d) / 5
 
-                # Точка ближче до v2 (2:3)
-                tx = x0_2d + dx * 0.6
-                ty = y0_2d + dy * 0.6
+                tx, ty = mx, my
 
 
             if self.ids:
