@@ -253,8 +253,8 @@ class Label_name:
                 x0_2d, y0_2d = self.canvas.project_point(x0, y0, z0)
                 x1_2d, y1_2d = self.canvas.project_point(x1, y1, z1)
 
-                mx = (3 * x0_2d + 2 * x1_2d) / 5
-                my = (3 * y0_2d + 2 * y1_2d) / 5
+                mx = (2 * x0_2d + 5 * x1_2d) / 7
+                my = (2 * y0_2d + 5 * y1_2d) / 7
 
                 tx, ty = mx, my
 
