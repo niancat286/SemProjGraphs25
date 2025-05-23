@@ -5,13 +5,14 @@ from collections import defaultdict
 from edge import Label_name
 import numpy as np
 import math
-
+import tkinter as tk
 
 class Graph:
     def __init__(self, canvas, filename = None):
         self.canvas = canvas
         self.N = 0
         self.__matrix_adjacency = []
+        self.label_state = tk.BooleanVar(value=True)
 
         self.elements = []
         if filename is not None:
@@ -114,7 +115,9 @@ class Graph:
 
         for label in self.labels:
             label.erase()
-            label.draw()
+        if self.label_state.get():
+            for label in self.labels:
+                label.draw()
 
         self.elements = elements
 #        print(self.canvas.find_all())

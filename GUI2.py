@@ -311,6 +311,10 @@ class Controls(ttk.Frame):
         self.__create_rotation_interface()
         ttk.Separator(self, orient=tk.HORIZONTAL).pack(side='top', fill='x')
         self.__create_drag_interface()
+        self.__create_labels_controls()
+
+    def __create_labels_controls(self):
+        ttk.Checkbutton(self, text='Edge labels', variable=self.graph.label_state, command=lambda *args:self.graph.draw()).pack(side='bottom', pady = 2)
 
     def __create_vertex_mover_button(self):
         ttk.Button(self, text='Move vertex', command=self.create_vertex_mover, state='normal').pack(side='top', pady=2)
