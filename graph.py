@@ -212,6 +212,8 @@ class Graph:
         self.draw()
 
     def zoom_for(self, z, vertex=None):
+        if vertex is None:
+            self.centroid[2] += z
         vertices = self.vertices if vertex is None else [vertex]
         for vertex in vertices:
             vertex.zoom_for(z)
