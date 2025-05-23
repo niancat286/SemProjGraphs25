@@ -219,10 +219,6 @@ class Label_name:
         x0, y0, z0 = self.__v1.x, self.__v1.y, self.__v2.z
         x1, y1, z1 = self.__v2.x, self.__v2.y, self.__v2.z
 
-        # Проєктуємо в 2D
-        x0_2d, y0_2d = self.canvas.project_point(x0, y0, z0)
-        x1_2d, y1_2d = self.canvas.project_point(x1, y1, z1)
-
         # Обчислюємо позицію тексту трохи ближче до __v2
         try:
             if self.__v1.number == self.__v2.number:
@@ -247,14 +243,23 @@ class Label_name:
 
                     x2 = offset_x + r_loop * math.cos(t2)
                     y2 = offset_y + r_loop * math.sin(t2)
-                    z2 = offset_z + 0.01
+                    z2 = offset_z
 
                 tx, ty = self.canvas.project_point(x2, y2, z2)
 
             else:
                 # Стандартне ребро
-                tx = x0_2d + (x1_2d - x0_2d) * 2 / 3
-                ty = y0_2d + (y1_2d - y0_2d) * 2 / 3
+                # Вектор від v1 до v2
+                x0_2d, y0_2d = self.canvas.project_point(x0, y0, z0)
+                x1_2d, y1_2d = self.canvas.project_point(x1, y1, z1)
+
+                dx = x1_2d - x0_2d
+                dy = y1_2d - y0_2d
+
+                # Точка ближче до v2 (2:3)
+                tx = x0_2d + dx * 0.6
+                ty = y0_2d + dy * 0.6
+
 
             if self.ids:
                 label_text = ','.join(str(i) for i in self.ids)
