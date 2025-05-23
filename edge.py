@@ -48,8 +48,8 @@ class Edge:
             return []
         canvas = self.canvas
 
-        if self.__v1.number == self.__v2.number:
-            x0, y0, z0 = self.__v1.transformed
+        if V1 == V2:
+            x0, y0, z0 = V1
             r_vertex = self.__v1.r
             r_loop = r_vertex * 1.8  # трохи більша дуга
 
@@ -92,7 +92,7 @@ class Edge:
 
         x1, y1, z1 = V1
         x2, y2, z2 = V2
-        L = ((x1 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2) ** 0.5
+        L = ((x2 - x1) ** 2 + (y2 - y1) ** 2 + (z2 - z1) ** 2) ** 0.5
         N = int(L)+1
         
         segments = []
@@ -185,6 +185,11 @@ class Edge:
         _V1, _V2, arrow = self.calc_begin_end()
         x0, y0 = self.canvas.project_point(*_V1)
         x1, y1 = self.canvas.project_point(*_V2)
+
+        if _V1 == _V2:
+            print(x0, y0)
+            print(x1, y1)
+
         if(x0 == None):
             print('THIS WAS NOT SUPPOSSED TO HAPPEN')
             raise Exception

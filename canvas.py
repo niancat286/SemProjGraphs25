@@ -109,7 +109,9 @@ class Canvas(tk.Canvas):
     def project_point(self, x0, y0, z0):
         #_x, _y, _z = self.transform_point(x0, y0, z0)
         if z0 < self.clipping_z:
+            #print(f"Point ({x0}, {y0}, {z0}) is behind clipping plane {self.clipping_z}")
             return None, None
+
         x = x0 * self.clipping_z / z0
         y = y0 * self.clipping_z / z0
 
