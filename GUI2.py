@@ -320,7 +320,7 @@ class Controls(ttk.Frame):
     def create_vertex_mover(self):
         if self.vertex_mover is None:
             self.vertex_mover = VertexMover(self, self.graph)
-            self.vertex_mover.bind("<destroy>", self.on_vertex_mover_destroy)
+            self.vertex_mover.bind("<Destroy>", self.on_vertex_mover_destroy)
         else:
             self.vertex_mover.lift()
 
