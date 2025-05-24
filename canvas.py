@@ -26,7 +26,7 @@ class Canvas(tk.Canvas):
 
 #        self.create_oval(0-20, 0-20, 0+20, 0+20, fill= 'blue')
 
-        print(f"{self.__getitem__('width')=}\n{self.__getitem__('height')=}")
+       # print(f"{self.__getitem__('width')=}\n{self.__getitem__('height')=}")
         
    
     def setup_centered_coordinates(self, event=None):
@@ -85,7 +85,7 @@ class Canvas(tk.Canvas):
         elif e.num == 5:  # Linux scroll down
             delta = -1.0
         else:  # Windows/Mac (<MouseWheel>)
-            delta = e.delta 
+            delta = e.delta
     
         step = -5
         z = delta * step

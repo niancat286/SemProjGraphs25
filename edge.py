@@ -186,9 +186,9 @@ class Edge:
         x0, y0 = self.canvas.project_point(*_V1)
         x1, y1 = self.canvas.project_point(*_V2)
 
-        if _V1 == _V2:
-            print(x0, y0)
-            print(x1, y1)
+       # if _V1 == _V2:
+       #     print(x0, y0)
+       #     print(x1, y1)
 
         if(x0 == None):
             print('THIS WAS NOT SUPPOSSED TO HAPPEN')

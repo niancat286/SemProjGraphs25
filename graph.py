@@ -73,7 +73,7 @@ class Graph:
         self.labels = []
 
         coords = generate_points(self.N)
-        print(coords)
+       # print(coords)
         for i in range(self.N):
             self.vertices.append(Vertex(*coords[i], number = i+1, canvas = self.canvas))
         j=-1

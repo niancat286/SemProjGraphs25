@@ -373,24 +373,6 @@ class GUI(tk.Tk):
         self.__create_widgets()
         self.mainloop()
 
-    
-    def __implement_mouse_zooming(self):
-        root = self
-        root.bind("<MouseWheel>", self.mouse_wheel)
-        # with Linux OS
-        root.bind("<Button-4>", self.mouse_wheel)
-        root.bind("<Button-5>", self.mouse_wheel)
-        
-    def mouse_wheel(self, event):
-        # respond to Linux or Windows wheel event
-        if event.num == 5 or event.delta == -120:
-            self.zoom.set(self.zoom.get() - 1) 
-            print('down')
-        if event.num == 4 or event.delta == 120:
-            self.zoom.set(self.zoom.get() + 1)
-            print('up')
-        self.graph.draw()
-
 
 
     def __create_widgets(self):
@@ -412,11 +394,6 @@ class GUI(tk.Tk):
         filename = tk.filedialog.askopenfilename(defaultextension=".txt",
                                                  filetypes=(("Text Files", "*.txt"),
                                                             ("All Files", "*.*")))
-        #   self.__graph = Graph(filename)
-        #   self.__create_controls()
-        #   self.__canvas.redraw()
-
-        self.graph = Graph(self.canvas, filename)
 
         try:
             self.graph = Graph(self.canvas, filename)
@@ -429,7 +406,6 @@ class GUI(tk.Tk):
         self.graph.draw()
         self.__create_controls()
         self.graph.controls = self.controls
-        self.__implement_mouse_zooming()
         
 
     # try:
