@@ -2,106 +2,174 @@ import math
 import numpy as np
 import tkinter as tk
 class Canvas(tk.Canvas):
-    def __init__(self, root):
+    def __init__(self, root, graph = None):
         super().__init__(root,  bg="#FFFFFF")
-        self.place(relx=0.01, rely=0.01,relwidth=0.8, relheight=0.9)
+        self.place(relx=0.01, rely=0.01,relwidth=0.8, relheight=0.98)
 #        self.place(x=0.01, y=0.01, width=1024, height=648)
         
+        self.graph = graph
+        #  self.zoom = tk.DoubleVar(value=0)
+        # self.__zoom_fixed = -100
+        # self.__x_rot_fixed = 0
+        # self.__y_rot_fixed = 0
+        # self.__z_rot_fixed = 0
 
-        self.__implement_mouse_dragging()
-
-        self.zoom = tk.DoubleVar(value=50)
+        # self.x_rot_angle = tk.DoubleVar(value=0)
+        # self.y_rot_angle = tk.DoubleVar(value=0)
+        # self.z_rot_angle = tk.DoubleVar(value=0)
+        self.scale = 50
+        # self.position = [0,0]
+        self.clipping_z = 20
         
-        self.__x_rot_fixed = 0
-        self.__y_rot_fixed = 0
-        self.__z_rot_fixed = 0
+        self.bind("<Configure>", self.setup_centered_coordinates)
+        self.setup_centered_coordinates()
 
-        self.x_rot_angle = tk.DoubleVar(value=0)
-        self.y_rot_angle = tk.DoubleVar(value=0)
-        self.z_rot_angle = tk.DoubleVar(value=0)
-        self.scale = 1000
-        self.position = [0,0]
+#        self.create_oval(0-20, 0-20, 0+20, 0+20, fill= 'blue')
 
         print(f"{self.__getitem__('width')=}\n{self.__getitem__('height')=}")
+        
+   
+    def setup_centered_coordinates(self, event=None):
+        W = self.winfo_width()
+        H = self.winfo_height()
+        self.W = W
+        self.H = H
+        self.configure(scrollregion=(-W/2, -H/2, W/2, H/2))
+   #     self.xview_moveto(0.5)
+    #    self.yview_moveto(0.5)
+#        self.create_oval(-5,-5,5,5,fill='red')
 
+    def implement_controls(self):
+       self.selected_vertex = None
+       self.__implement_mouse_dragging()
+       self.__implement_mouse_scrolling()
+       self.__implement_arcball_rotation()
+
+
+    def __implement_mouse_scrolling(self):
+        self.bind("<MouseWheel>", self.on_wheel)  # Windows
+        self.bind("<Button-4>", self.on_wheel)   # Linux (scroll up)
+        self.bind("<Button-5>", self.on_wheel)   # Linux (scroll down)
+    
+    
     def __implement_mouse_dragging(self):
-        self.bind("<ButtonPress-1>", lambda e: self.scan_mark(e.x, e.y))
-        self.bind("<B1-Motion>",    lambda e: self.scan_dragto(e.x, e.y, gain=1))
+        self.bind("<ButtonPress-1>", self.on_click)
+        self.bind("<B1-Motion>",  self.on_motion)
+        self.bind("<ButtonRelease-1>", self.on_release)
+#        print('mdr')
+
+    def on_release(self, e):
+        self.selected_vertex = None
+
+    def on_click(self, e):
+#        print(e)
+        _x = e.x - self.W/2
+        _y = e.y - self.H/2
+ #       print(f"{_x=}, {_y=}")
+  #      print(f"{self.W=}, {self.H=}")
+        closest = self.find_overlapping(_x - 0.5, _y - 0.5, _x + 0.5, _y + 0.5)
+        self.selected_vertex = self.graph.vertex_by_id(closest)
+        self.click_x = e.x
+        self.click_y = e.y
+
+    def on_motion(self, e):
+        x, y = e.x, e.y
+        self.graph.move_for((x-self.click_x), -(y-self.click_y), self.selected_vertex)
+        self.click_x = x
+        self.click_y = y
 
 
+    def on_wheel(self, e):
+        if e.num == 4:  # Linux scroll up
+            delta = 1.0
+        elif e.num == 5:  # Linux scroll down
+            delta = -1.0
+        else:  # Windows/Mac (<MouseWheel>)
+            delta = e.delta 
+    
+        step = -5
+        z = delta * step
+        self.graph.zoom_for(z, vertex=self.selected_vertex)
+    
+ #       print(f"Zoom fixed: {self.__zoom_fixed}")
 
-    def draw_line(self, x0, y0, x1, y1, width=1, color='blue'):
-        #cx = x1 + (x1 + x0) / 2
-        #cy = y1 - (y1 - y0)/2
-        return self.create_line(x0,y0,x1,y1, width=width, fill=color, arrow=tk.LAST)
-        #return self.create_line(x0,y0, cx, cy, x1,y1, width=width, fill=color, arrow=tk.LAST, smooth=True)
+    # def reset_rotation(self):
+        # self.x_rot_angle.set(0)
+        # self.y_rot_angle.set(0)
+        # self.z_rot_angle.set(0)
+        #
+    # def fix_rotation(self):
+        # self.__x_rot_fixed += self.x_rot_angle.get()
+        # self.__y_rot_fixed += self.y_rot_angle.get()
+        # self.__z_rot_fixed += self.z_rot_angle.get()
+        # self.reset_rotation()
+        #
+        # return [point[0][0], point[1][0], point[2][0]]
+        #
+    def __implement_arcball_rotation(self):
+        self.bind("<Control-ButtonPress-1>", self.start_arcball)
+        self.bind("<Control-B1-Motion>", self.drag_arcball)
+        self.bind("<Control-ButtonRelease-1>", self.end_arcball)
 
+    def start_arcball(self, event):
+        self.ball_x = event.x
+        self.ball_y = event.y
 
-    def draw_circle(self, x, y, r=10, color='paleturquoise2', text=None, text_color='black'):
-        point = self.create_oval(
-            x - r, y - r,
-            x + r, y + r,
-            fill = color,
-            outline=''
-        )
-        if(text == None):
+    def drag_arcball(self, event):
+        if self.ball_x is None:
             return
-        label = self.create_text(
-            x, y,
-            text = text,
-            fill = text_color,
-            anchor = 'center'
-        )
-        return point, label
+        x = event.x
+        y = event.y
+        dx = x - self.ball_x
+        dy = y - self.ball_y
+        self.ball_x = x
+        self.ball_y = y
 
+        rotation_matrix = self.calculate_rotation(dx, dy)
+        self.graph.rotate_around_centroid(None,None,None,matrix=rotation_matrix)
 
-    def reset_rotation(self, *args):
-        self.x_rot_angle.set(0)
-        self.y_rot_angle.set(0)
-        self.z_rot_angle.set(0)
+    def end_arcball(self, event):
+        self.ball_x = None
+        self.ball_y = None
 
-    def fix_rotation(self, *args):
-        self.__x_rot_fixed += self.x_rot_angle.get()
-        self.__y_rot_fixed += self.y_rot_angle.get()
-        self.__z_rot_fixed += self.z_rot_angle.get()
-        self.reset_rotation()
+    def calculate_rotation(self, dx, dy):
+        dy = -dy
+        angle = np.sqrt(dx**2 + dy**2) * 0.005  # Angle in radians
+        if angle == 0:
+            return np.eye(3)  # No rotation
 
+        # Rotation axis (perpendicular to drag direction)
+        axis = np.array([dy, -dx, 0])  # y-axis for dx, x-axis for dy, z=0 (screen plane)
+        norm = np.linalg.norm(axis)
+        if norm == 0:
+            return np.eye(3)
+        axis = axis / norm
 
-
-    def move_up(self, step=1):
-        self.scan_mark(0,0)
-        self.scan_dragto(self.position[0], self.position[1]-step)
-
-    def move_down(self, step=1):
-        self.scan_mark(0,0)
-        self.scan_dragto(self.position[0], self.position[1]+step)
-
-    def move_right(self, step=1):
-        self.scan_mark(0,0)
-        self.scan_dragto(self.position[0]+step, self.position[1])
-
-    def move_left(self, step=1):
-        self.scan_mark(0,0)
-        self.scan_dragto(self.position[0]-step, self.position[1])
-
+        # Rodrigues' rotation formula
+        c = np.cos(angle)
+        s = np.sin(angle)
+        t = 1 - c
+        x, y, z = axis
+        rotation_matrix = np.array([
+            [t*x*x + c,    t*x*y - z*s, t*x*z + y*s],
+            [t*x*y + z*s,  t*y*y + c,   t*y*z - x*s],
+            [t*x*z - y*s,  t*y*z + x*s, t*z*z + c]
+        ])
+        return rotation_matrix
 
     def project_point(self, x0, y0, z0):
-        point = [[x0], [y0], [z0]]
-    #    print(f"{point=} , {rotation_x=} {rotation_y=} {rotation_z=} {zoom=}")
-    
-        rotation_x, rotation_y, rotation_z = self.calculate_matrices()
+        #_x, _y, _z = self.transform_point(x0, y0, z0)
+        if z0 < self.clipping_z:
+            #print(f"Point ({x0}, {y0}, {z0}) is behind clipping plane {self.clipping_z}")
+            return None, None
 
-        rotated_2d = np.matmul(rotation_y, point)
-        rotated_2d = np.matmul(rotation_x, rotated_2d)
-        rotated_2d = np.matmul(rotation_z, rotated_2d)
-    
-        z = 1/(self.zoom.get() - rotated_2d[2][0])
-        projection_matrix = [[z, 0, 0],
-                            [0, z, 0]]
-        projected_2d = np.matmul(projection_matrix, rotated_2d)
-        x = int(projected_2d[0][0] * self.scale)
-        #The (-) sign in the Y is because the canvas' Y axis starts  from Top to Bottom
-        y = -int(projected_2d[1][0] * self.scale)
+        x = x0 * self.clipping_z / z0
+        y = y0 * self.clipping_z / z0
+
+        x *= self.scale
+        y *= self.scale
+
+        y = -y
 
         return x, y
    
@@ -135,6 +203,3 @@ class Canvas(tk.Canvas):
 
 
 
-    def redraw(self, *args):
-        print(f"{self.zoom.get()=}\n{self.x_rot_angle.get()=}\n{self.y_rot_angle.get()=}\n{self.z_rot_angle.get()=}")
-        pass
