@@ -118,7 +118,6 @@ class Canvas(tk.Canvas):
     def drag_arcball(self, event):
         if self.ball_x is None:
             return
-
         x = event.x
         y = event.y
         dx = x - self.ball_x

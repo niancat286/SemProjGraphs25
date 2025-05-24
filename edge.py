@@ -36,7 +36,7 @@ class Edge:
     def __init__(self, vertex1, vertex2, edge_id, canvas):
         self.__v1 = vertex1
         self.__v2 = vertex2
-        self.ids = [*edge_id]
+        self.ids = edge_id
 
         self.canvas = canvas
         self.canvas_id = None  # id лінії
@@ -194,8 +194,6 @@ class Edge:
             print('THIS WAS NOT SUPPOSSED TO HAPPEN')
             raise Exception
         self.canvas_id = self.canvas.create_line(x0, y0, x1, y1, fill='blue', arrow = arrow)
-
-
 
     def add_paralel(self, edge_id):
         self.ids.append(edge_id)
